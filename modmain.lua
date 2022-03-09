@@ -7,7 +7,6 @@ PrefabFiles = require("industrialrev_prefabs")
 
 --strings & desc.
 modimport("init/init_names")
-modimport("init/init_bonusdescriptors")
 modimport("init/init_descriptions/generic")
 modimport("init/init_descriptions/willow")
 modimport("init/init_descriptions/wolfgang")
@@ -29,7 +28,6 @@ modimport("init/init_descriptions/wanda")
 
 --assets
 modimport("init/init_assets")
-modimport("init/init_widgets")
 modimport("init/minimap_icons")
 
 modimport("init/init_tuning")

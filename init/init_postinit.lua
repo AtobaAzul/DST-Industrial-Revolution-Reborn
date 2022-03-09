@@ -1,4 +1,5 @@
 --Update this list when adding files
+print("Loaded init_postinit successfully.")
 local component_post = {
     --"container",
 }

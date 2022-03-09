@@ -20,3 +20,4 @@
     end
 end
 )]]
+print("Loaded init_actions successfully.")
