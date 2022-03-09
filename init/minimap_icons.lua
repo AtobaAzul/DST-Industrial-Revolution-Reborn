@@ -1,0 +1,1 @@
+--AddMinimapAtlas("images/map_icons/riceplant.xml")
