@@ -1,8 +1,8 @@
-name = "Industrial Revolution"
+name = "Winona's Mini Industrial Revolution"
 version = "Pre-Release 0.1"
 description = [[
-Industrial Revolution is a mod that adds Factorio-esque power management and automation, and reworks Winona to be based around that.
-Version: Pre-Release 0.1
+This mod aims to expand upon Winona's electrical  kit.
+Pre-Release 0.1
 ]]
 author = "Atoba Azul"
 forumthread = ""

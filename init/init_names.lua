@@ -1,4 +1,0 @@
-SKINS = GLOBAL.STRINGS.SKIN_NAMES
-STRINGS = GLOBAL.STRINGS.NAMES
-UI = GLOBAL.STRINGS.UI
-print("Loaded init_names successfully.")
