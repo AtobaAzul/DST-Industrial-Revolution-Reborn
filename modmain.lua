@@ -11,6 +11,7 @@ PrefabFiles = {
     "electricalstaff",
     "lantern_electrical"
 }
+
 local env = env
 GLOBAL.setfenv(1, GLOBAL)
 -----------------------------------------------------------------
@@ -20,6 +21,36 @@ GLOBAL.setfenv(1, GLOBAL)
 --Recipes
 --Quotes & Strings
 --Art
+
+
+
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.AXE_ELECTRICAL = "Let's get to it, chop chop!"
+STRINGS.CHARACTERS.WILLOW.DESCRIBE.AXE_ELECTRICAL = "So, hm, does it burn the trees?"
+STRINGS.CHARACTERS.WICKERBOTTOM.DESCRIBE.AXE_ELECTRICAL = "A rather ingenious invention\nI wonder how she made the circuitry resist the forces applied against it."
+STRINGS.CHARACTERS.WAXWELL.DESCRIBE.AXE_ELECTRICAL = "Hmph, rather unnecessary."
+STRINGS.CHARACTERS.WOODIE.DESCRIBE.AXE_ELECTRICAL = "Trying to copy Lucy, eh?"
+STRINGS.CHARACTERS.WOLFGANG.DESCRIBE.AXE_ELECTRICAL = "Axe full of power just like Wolfgang!"
+STRINGS.CHARACTERS.WENDY.DESCRIBE.AXE_ELECTRICAL = "I'll cut myself an electric chair."
+STRINGS.CHARACTERS.WX78.DESCRIBE.AXE_ELECTRICAL = "OVERALLS REMAINS MY FAVORITE FLESHLING"
+STRINGS.CHARACTERS.WINONA.DESCRIBE.AXE_ELECTRICAL = "It ain't the good old chainsaw but it'll do."
+STRINGS.CHARACTERS.WANDA.DESCRIBE.AXE_ELECTRICAL = "How do people use this stuff over clockwork?"
+STRINGS.CHARACTERS.WURT.DESCRIBE.AXE_ELECTRICAL = "Makes scales feel tingly..."
+STRINGS.CHARACTERS.WORTOX.DESCRIBE.AXE_ELECTRICAL = "An axe of mine, ready to power. Charge it up and get ready to devour!"
+STRINGS.CHARACTERS.WORMWOOD.DESCRIBE.AXE_ELECTRICAL = "Zzzt friend hurter (sob)"
+
+STRINGS.CHARACTERS.GENERIC.DESCRIBE.HAMMER_ELECTRICAL = "It's sdafaega!"
+STRINGS.CHARACTERS.WILLOW.DESCRIBE.HAMMER_ELECTRICAL = "Another non-firey tool. Shocking."
+STRINGS.CHARACTERS.WICKERBOTTOM.DESCRIBE.HAMMER_ELECTRICAL = "Her knowledge of plantlife rivals even mine..."
+STRINGS.CHARACTERS.WAXWELL.DESCRIBE.HAMMER_ELECTRICAL = "I think she's angry at me."
+STRINGS.CHARACTERS.WOODIE.DESCRIBE.HAMMER_ELECTRICAL = "Trying to copy Lucy, eh?"
+STRINGS.CHARACTERS.WOLFGANG.DESCRIBE.HAMMER_ELECTRICAL = "She good for healing, not fighting."
+STRINGS.CHARACTERS.WENDY.DESCRIBE.HAMMER_ELECTRICAL = "You can't heal a broken heart."
+STRINGS.CHARACTERS.WX78.DESCRIBE.HAMMER_ELECTRICAL = "OVERALLS REMAINS MY FAVORITE FLESHLING"
+STRINGS.CHARACTERS.WINONA.DESCRIBE.HAMMER_ELECTRICAL = "It ain't the good old chainsaw but it'll do."
+STRINGS.CHARACTERS.WANDA.DESCRIBE.HAMMER_ELECTRICAL = "How do people use this stuff over clockwork?"
+STRINGS.CHARACTERS.WURT.DESCRIBE.HAMMER_ELECTRICAL = "Makes scales feel tingly..."
+STRINGS.CHARACTERS.WORTOX.DESCRIBE.HAMMER_ELECTRICAL = "It ain't the good old chainsaw but it'll do."
+STRINGS.CHARACTERS.WORMWOOD.DESCRIBE.HAMMER_ELECTRICAL = "Zzzt friend hurter (sob)"
 
 local um = KnownModIndex:IsModEnabled("workshop-2039181790")
 if not um then --I've addedthis already for UM, prevents overlap.

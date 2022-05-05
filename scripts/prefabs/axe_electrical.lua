@@ -18,7 +18,7 @@ local function turnon(inst)
     end
     inst:AddComponent("tool")
     if TheWorld.state.iswet then
-        inst.components.tool:SetAction(ACTIONS.CHOP, 1.5)
+        inst.components.tool:SetAction(ACTIONS.CHOP, 2)
     else
         inst.components.tool:SetAction(ACTIONS.CHOP, 0.75)
     end

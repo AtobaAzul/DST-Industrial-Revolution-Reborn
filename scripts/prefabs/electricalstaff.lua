@@ -184,7 +184,7 @@ local function blue()
 
     inst:AddComponent("fueled")
     inst.components.fueled:SetSectionCallback(onfuelchange)
-    inst.components.fueled:InitializeFuelLevel(TUNING.NIGHTSTICK_FUEL)
+    inst.components.fueled:InitializeFuelLevel(TUNING.NIGHTSTICK_FUEL/2)
     inst.components.fueled:SetDepletedFn(nofuel)
     inst.components.fueled:SetFirstPeriod(TUNING.TURNON_FUELED_CONSUMPTION, TUNING.TURNON_FULL_FUELED_CONSUMPTION)
 
