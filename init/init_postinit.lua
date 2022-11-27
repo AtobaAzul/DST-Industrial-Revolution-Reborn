@@ -4,7 +4,7 @@ local component_post = {
 }
 
 local prefab_post = {
-
+	"world",
 }
 
 local stategraph_post = {
@@ -19,7 +19,6 @@ local brain_post = {
 
 }
 
-modimport("postinit/sim")
 modimport("postinit/any")
 modimport("postinit/player")
 

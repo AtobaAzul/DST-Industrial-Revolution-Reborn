@@ -16,3 +16,7 @@ local inits =
     "widgets",
     "minimap_icons",
 }
+
+for k,v in ipairs(inits) do
+    modimport("init/init_"..v)
+end
