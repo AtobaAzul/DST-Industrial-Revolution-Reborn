@@ -6,7 +6,7 @@ end)
 
 --creates grids, returns the grid as well.
 function PowerGrid:CreateGrid() --inst
-    self.power_grids[#self.power_grids+1] = {
+    self.power_grids[#self.power_grids + 1] = {
         buildings = {},
         total_power = 0
     }
@@ -30,12 +30,30 @@ function PowerGrid:IsGridValid(grid)
     return false
 end
 
+function PowerGrid:CalculateGridPower(grid)
+    assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
+    local power = 0
+    for k, v in pairs(grid.buildings) do
+        power = power + v
+    end
+    grid.total_power = power
+    return power
+end
+
+--calculates the power
+function PowerGrid:CalculateInstGridPower(inst)
+    local grid = self:GetCurrentGrid(inst)
+    return self:CalculateGridPower(grid)
+end
+
 --adds a inst to a grid.
-function PowerGrid:AddToGrid(inst, grid)
+function PowerGrid:AddInstToGrid(inst, grid)
     if grid == nil then
         grid = self:CreateGrid()
     end
-    assert(inst ~= nil and inst.GUID ~= nil, "Attempted to add invalid entity to grid "..tostring(grid).."!")
+
+    assert(inst ~= nil and inst.GUID ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
+    assert(inst.components.ir_power ~= nil, "Attempted to add entity with invalid ir_power component!")
 
     --buildings cannot be in more than 1 grid.
     for k, v in pairs(self.power_grids) do
@@ -44,22 +62,21 @@ function PowerGrid:AddToGrid(inst, grid)
         end
     end
 
-    grid.buildings[inst.GUID] = inst.grid_power --TODO: make this a component?
+    grid.buildings[inst.GUID] = inst.components.ir_power.power
+    inst:PushEvent("ir_addedtogrid", { grid = grid })
+    self:CalculateGridPower(grid)
 end
 
-function PowerGrid:CalculateGridPower(grid)
-    assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
-    local power = 0
-    for k, v in pairs(grid.buildings) do
-        power = power + v
+function PowerGrid:OnSave()
+    return {
+        power_grids = self.power_grids
+    }
+end
+
+function PowerGrid:OnLoad(data)
+    if data.power_grids ~= nil then
+        self.power_grids = data.power_grids
     end
-    return power
-end
-
---calculates the power 
-function PowerGrid:CalculateInstGridPower(inst)
-    local grid = self:GetCurrentGrid(inst)
-    return self:CalculateGridPower(grid)
 end
 
 return PowerGrid

@@ -1,3 +1,3 @@
 return {
-
+    "ir_generators",
 }

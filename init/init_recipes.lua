@@ -60,6 +60,14 @@ end
 --NEW RECIPES--
 ---------------
 
+AddRecipe2(
+    "ir_generator_t1",
+    { Ingredient("nitre", 2), Ingredient("gears", 1), Ingredient("cutstone", 2) },
+    TECH.SCIENCE_ONE,
+    { placer = "ir_generator_t1_placer" },
+    { "STRUCTURES" }
+)
+
 ------------------
 --RECIPE STRINGS--
 ------------------
