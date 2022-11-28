@@ -8,8 +8,7 @@ local Power = Class(function(self, inst)
     self.inst = inst
 
     self.power = 0
-
-    self.inst:AddTag("ir_power")--Add this to pristine state in the prefabs for optimization
+    self.inst:AddTag("ir_power") --Add this to pristine state in the prefabs for optimization
 end,
     nil,
     {

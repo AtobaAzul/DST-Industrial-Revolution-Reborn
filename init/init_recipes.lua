@@ -68,6 +68,13 @@ AddRecipe2(
     { "STRUCTURES" }
 )
 
+AddRecipe2(
+    "ir_powerline",
+    { Ingredient("boards", 2), Ingredient("goldnugget", 2), Ingredient("cutstone", 2) },
+    TECH.SCIENCE_ONE,
+    { placer = "ir_powerline_placer" },
+    { "STRUCTURES" }
+)
 ------------------
 --RECIPE STRINGS--
 ------------------

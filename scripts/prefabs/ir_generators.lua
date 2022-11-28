@@ -129,13 +129,20 @@ local function FindGrid(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
     local ents = TheSim:FindEntities(x, y, z, 5, { "ir_power" }, { "burnt" })
     local found_grid = false
+    local current_grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
 
     for k, v in pairs(ents) do
         local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
-        if grid ~= nil then
-            TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
-            found_grid = true
-            break
+        if grid ~= nil and TheWorld.components.ir_powergrid:IsGridValid(grid) then
+            if #grid.buildings < #current_grid.buildings then
+                TheWorld.components.ir_powergrid:AddInstToGrid(v, current_grid)
+                found_grid = true
+                break
+            else
+                TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
+                found_grid = true
+                break
+            end
         end
     end
 
@@ -146,7 +153,7 @@ local function FindGrid(inst)
 end
 
 local function OnLoad(inst, data)
-    if data.grid ~= nil then
+    if data.grid ~= nil and TheWorld.components.ir_powergrid:IsGridValid(data.grid) then
         TheWorld.components.ir_powergrid:AddInstToGrid(inst, data.grid)
         inst.has_grid = true
     else

@@ -1,8 +1,16 @@
+local function OnPowergridsChanged(self, power_grids)
+    self:ClearEmptyGrids()
+end
+
 local PowerGrid = Class(function(self, inst)
     self.inst = inst
 
     self.power_grids = {}
-end)
+end, nil,
+    {
+        power_grids = OnPowergridsChanged
+    }
+)
 
 --creates grids, returns the grid as well.
 function PowerGrid:CreateGrid() --inst
@@ -16,7 +24,7 @@ end
 --gets the grid of an existing ent inside a grid.
 function PowerGrid:GetCurrentGrid(inst)
     for k, grid in pairs(self.power_grids) do
-        if grid.buildings[inst.GUID] ~= nil then
+        if grid.buildings[inst] ~= nil then
             return grid
         end
     end
@@ -31,7 +39,7 @@ function PowerGrid:IsGridValid(grid)
 end
 
 function PowerGrid:CalculateGridPower(grid)
-    assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
+    --assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
     local power = 0
     for k, v in pairs(grid.buildings) do
         power = power + v
@@ -52,17 +60,19 @@ function PowerGrid:AddInstToGrid(inst, grid)
         grid = self:CreateGrid()
     end
 
-    assert(inst ~= nil and inst.GUID ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
+    assert(inst ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
     assert(inst.components.ir_power ~= nil, "Attempted to add entity with invalid ir_power component!")
 
     --buildings cannot be in more than 1 grid.
     for k, v in pairs(self.power_grids) do
-        if v.buildings[inst.GUID] ~= nil and v ~= grid then
-            v.buildings[inst.GUID] = nil
+        if v.buildings[inst] ~= nil and v ~= grid then
+            v.buildings[inst] = nil
+            self:ClearEmptyGrids()
+            break
         end
     end
 
-    grid.buildings[inst.GUID] = inst.components.ir_power.power
+    grid.buildings[inst] = inst.components.ir_power.power
     inst:PushEvent("ir_addedtogrid", { grid = grid })
     self:CalculateGridPower(grid)
 end
@@ -71,6 +81,14 @@ function PowerGrid:OnSave()
     return {
         power_grids = self.power_grids
     }
+end
+
+function PowerGrid:ClearEmptyGrids()
+    for k, v in pairs(self.power_grids) do
+        if #v.buildings == 0 then
+            v = nil
+        end
+    end
 end
 
 function PowerGrid:OnLoad(data)
