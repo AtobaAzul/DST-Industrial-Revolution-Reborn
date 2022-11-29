@@ -248,6 +248,11 @@ local function fn()
     MakeHauntableWork(inst)
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
+
+    inst.OnRemoveEntity = function(inst)
+        TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
+    end
+
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
 

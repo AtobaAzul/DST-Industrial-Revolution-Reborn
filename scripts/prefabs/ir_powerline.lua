@@ -95,6 +95,9 @@ local function fn()
 
     inst.OnSave = OnSave
     inst.OnLoad = OnLoad
+    inst.OnRemoveEntity = function(inst)
+        TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
+    end
 
     return inst
 end

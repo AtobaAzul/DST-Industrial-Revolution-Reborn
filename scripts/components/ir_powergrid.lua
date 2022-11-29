@@ -32,7 +32,7 @@ end
 --gets the grid of an existing ent inside a grid.
 function PowerGrid:GetCurrentGrid(inst)
     for k, grid in pairs(self.power_grids) do
-        if grid.buildings[inst] ~= nil then
+        if grid.buildings[inst.GUID] ~= nil then
             return grid
         end
     end
@@ -77,17 +77,23 @@ function PowerGrid:AddInstToGrid(inst, grid)
 
     --buildings cannot be in more than 1 grid.
     for k, v in pairs(self.power_grids) do
-        if v.buildings[inst] ~= nil and v ~= grid then
-            v.buildings[inst] = nil
+        if v.buildings[inst.GUID] ~= nil and v ~= grid then
+            v.buildings[inst.GUID] = nil
             break
         end
     end
 
     self:ClearEmptyGrids()
 
-    grid.buildings[inst] = inst.components.ir_power.power
+    grid.buildings[inst.GUID] = inst.components.ir_power.power
     inst:PushEvent("ir_addedtogrid", { grid = grid })
     self:CalculateGridPower(grid)
+end
+
+function PowerGrid:RemoveInstFromGrids(inst)
+    for k,v in ipairs(self.power_grids)do
+        v.buildings[inst.GUID] = nil
+    end
 end
 
 function PowerGrid:OnSave()
