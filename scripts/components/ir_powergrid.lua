@@ -84,7 +84,7 @@ function PowerGrid:AddInstToGrid(inst, grid)
     table.insert(grid.buildings, { inst = inst })
 
     inst:PushEvent("ir_addedtogrid", { grid = grid })
-    self:ClearEmptyGrids()
+    --self:ClearEmptyGrids()
 end
 
 function PowerGrid:RemoveInstFromGrids(inst)
@@ -95,28 +95,6 @@ function PowerGrid:RemoveInstFromGrids(inst)
             end
         end
     end
-end
-
-function PowerGrid:OnSave()
-    local refs = {}
-    local data = {}
-
-    for k, grid in pairs(self.power_grids) do
-        refs[k] = {}
-        data[k] = {}
-        for i, building in pairs(grid.buildings) do
-            data[k].building = building.inst.GUID
-            table.insert(refs[k], building.inst.GUID)
-        end
-    end
-    printwrap("refs", refs)
-    printwrap("data", data)
-
-    return data, refs
-end
-
-function PowerGrid:OnLoadPostPass(ents, data)
-    printwrap("ents", "data")
 end
 
 return PowerGrid

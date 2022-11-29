@@ -70,61 +70,33 @@ function FindAndMergeGrid(inst, radius)
     end
 end
 
---adds ir_power, DoTaskInTime for finding grids, and some other misc defs
---@def.power; @def.range
-
-local function OnSave(inst, data)
-    if data ~= nil then
-        data.grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
-    end
-end
-
-local function OnLoad(inst, data)
-    if data ~= nil and data.grid ~= nil and inst ~= nil then
-        TheWorld.components.ir_powergrid:AddInstToGrid(inst, data.grid)
-        inst.has_grid = true
-    end
-end
-
 local function OnLoadPostPass(inst, data)
-    if not (inst.has_grid or data ~= nil and data.grid ~= nil) then
-        FindAndMergeGrid(inst)
-    end
+    FindAndMergeGrid(inst)
 end
 
+--adds ir_power, DoTaskInTime for finding grids, and some other misc stuff
+--@def.power; @def.range
 function MakeDefaultIRStructure(inst, def)
     inst:AddTag("ir_power")
     inst:AddComponent("ir_power")
     inst.components.ir_power.power = def.power
 
-    inst.has_grid = false
-    inst:DoTaskInTime(0, function()
-        if not inst.has_grid then
-            FindAndMergeGrid(inst)
-        end
-    end)
+    --inst.has_grid = false
+    --inst:DoTaskInTime(0, function()
+    --   if not inst.has_grid then
+    --        FindAndMergeGrid(inst)
+    --    end
+    --end)
+
+    if not POPULATING then
+        FindAndMergeGrid(inst)
+    end
 
     local _OnRemoveEntity = inst.OnRemoveEntity
     inst.OnRemoveEntity = function(inst)
         TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
         if _OnRemoveEntity ~= nil then
             _OnRemoveEntity(inst)
-        end
-    end
-
-    local _OnSave = inst.OnSave
-    inst.OnSave = function(inst, data)
-        OnSave(inst, data)
-        if _OnSave ~= nil then
-            _OnSave(inst, data)
-        end
-    end
-
-    local _OnLoad = inst.OnLoad
-    inst.OnLoad = function(inst, data)
-        OnLoad(inst, data)
-        if _OnLoad ~= nil then
-            _OnLoad(inst, data)
         end
     end
 
