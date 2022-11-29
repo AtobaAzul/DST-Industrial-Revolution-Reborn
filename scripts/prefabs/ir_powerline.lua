@@ -33,18 +33,6 @@ local function OnBurnt(inst)
     inst:RemoveTag("NOCLICK")
 end
 
-local function OnSave(inst, data)
-    data.grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
-end
-
-local function OnLoad(inst, data)
-    if data.grid ~= nil then
-        inst.has_grid = true
-    else
-        FindGrid(inst, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST)
-    end
-end
-
 local function fn()
     local inst = CreateEntity()
 
@@ -60,7 +48,7 @@ local function fn()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_t1", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -68,16 +56,7 @@ local function fn()
         return inst
     end
 
-    inst.has_grid = false
-
-    inst:DoTaskInTime(0, function()
-        FindGrid(inst, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST)
-    end)
-
     inst:AddComponent("inspectable")
-
-    inst:AddComponent("ir_power")
-    inst.components.ir_power.power = 0
 
     inst:AddComponent("lootdropper")
 
@@ -91,13 +70,9 @@ local function fn()
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
 
-    inst.components.burnable:SetOnBurntFn(OnBurnt)
+    MakeDefaultIRStructure(inst, {power = 0})
 
-    inst.OnSave = OnSave
-    inst.OnLoad = OnLoad
-    inst.OnRemoveEntity = function(inst)
-        TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
-    end
+    inst.components.burnable:SetOnBurntFn(OnBurnt)
 
     return inst
 end

@@ -79,7 +79,6 @@ function PowerGrid:AddInstToGrid(inst, grid)
     for k, v in pairs(self.power_grids) do
         if v.buildings[inst.GUID] ~= nil and v ~= grid then
             v.buildings[inst.GUID] = nil
-            break
         end
     end
 

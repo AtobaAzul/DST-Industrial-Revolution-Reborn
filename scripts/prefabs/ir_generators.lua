@@ -1,4 +1,5 @@
 require("prefabutil")
+local carratrace_common = require("prefabs/yotc_carrat_race_common")
 
 local assets =
 {
@@ -121,69 +122,6 @@ local function OnBurnt(inst)
     inst:RemoveTag("NOCLICK")
 end
 
-local PLACER_SCALE = 1.5
-
-local function OnUpdatePlacerHelper(helperinst)
-    if not helperinst.placerinst:IsValid() then
-        helperinst.components.updatelooper:RemoveOnUpdateFn(OnUpdatePlacerHelper)
-        helperinst.AnimState:SetAddColour(0, 0, 0, 0)
-    elseif helperinst:IsNear(helperinst.placerinst, TUNING.WINONA_BATTERY_RANGE) then
-        local hp = helperinst:GetPosition()
-        local p1 = TheWorld.Map:GetPlatformAtPoint(hp.x, hp.z)
-
-        local pp = helperinst.placerinst:GetPosition()
-        local p2 = TheWorld.Map:GetPlatformAtPoint(pp.x, pp.z)
-
-        if p1 == p2 then
-            helperinst.AnimState:SetAddColour(helperinst.placerinst.AnimState:GetAddColour())
-        else
-            helperinst.AnimState:SetAddColour(0, 0, 0, 0)
-        end
-    else
-        helperinst.AnimState:SetAddColour(0, 0, 0, 0)
-    end
-end
-
-local function OnEnableHelper(inst, enabled, recipename, placerinst)
-    if enabled then
-        if inst.helper == nil and inst:HasTag("HAMMER_workable") and not inst:HasTag("burnt") then
-            inst.helper = CreateEntity()
-
-            --[[Non-networked entity]]
-            inst.helper.entity:SetCanSleep(false)
-            inst.helper.persists = false
-
-            inst.helper.entity:AddTransform()
-            inst.helper.entity:AddAnimState()
-
-            inst.helper:AddTag("CLASSIFIED")
-            inst.helper:AddTag("NOCLICK")
-            inst.helper:AddTag("placer")
-
-            inst.helper.AnimState:SetBank("winona_battery_placement")
-            inst.helper.AnimState:SetBuild("winona_battery_placement")
-            inst.helper.AnimState:PlayAnimation("idle")
-            inst.helper.AnimState:SetLightOverride(1)
-            inst.helper.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
-            inst.helper.AnimState:SetLayer(LAYER_BACKGROUND)
-            inst.helper.AnimState:SetSortOrder(1)
-            inst.helper.AnimState:SetScale(PLACER_SCALE, PLACER_SCALE)
-
-            inst.helper.entity:SetParent(inst.entity)
-
-            if placerinst ~= nil then
-                inst.helper:AddComponent("updatelooper")
-                inst.helper.components.updatelooper:AddOnUpdateFn(OnUpdatePlacerHelper)
-                inst.helper.placerinst = placerinst
-                OnUpdatePlacerHelper(inst.helper)
-            end
-        end
-    elseif inst.helper ~= nil then
-        inst.helper:Remove()
-        inst.helper = nil
-    end
-end
-
 local function fn()
     local inst = CreateEntity()
 
@@ -200,11 +138,7 @@ local function fn()
     inst:AddTag("ir_power") --added to pristine state for optimization
     inst:AddTag("battery")
 
-    if not TheNet:IsDedicated() then
-        inst:AddComponent("deployhelper")
-        inst.components.deployhelper:AddRecipeFilter("ir_generator_t1")
-        inst.components.deployhelper.onenablehelper = OnEnableHelper
-    end
+    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_t1", "ir_power"})
 
     inst.entity:SetPristine()
 
@@ -212,16 +146,7 @@ local function fn()
         return inst
     end
 
-    inst.has_grid = false
-
-    inst:DoTaskInTime(0, function()
-        FindGrid(inst, 5)
-    end)
-
     inst:AddComponent("inspectable")
-
-    inst:AddComponent("ir_power")
-    inst.components.ir_power.power = 10
 
     inst:AddComponent("fueled")
     inst.components.fueled:SetDepletedFn(OnFuelEmpty)
@@ -248,10 +173,7 @@ local function fn()
     MakeHauntableWork(inst)
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
-
-    inst.OnRemoveEntity = function(inst)
-        TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
-    end
+    MakeDefaultIRStructure(inst, {power = 10})
 
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
@@ -259,36 +181,8 @@ local function fn()
     return inst
 end
 
-local PLACER_SCALE = 1.5
-
-local function placer_postinit_fn(inst)
-    --Show the battery placer on top of the battery range ground placer
-
-    local placer2 = CreateEntity()
-
-    --[[Non-networked entity]]
-    placer2.entity:SetCanSleep(false)
-    placer2.persists = false
-
-    placer2.entity:AddTransform()
-    placer2.entity:AddAnimState()
-
-    placer2:AddTag("CLASSIFIED")
-    placer2:AddTag("NOCLICK")
-    placer2:AddTag("placer")
-
-    placer2.AnimState:SetBank("winona_battery_low")
-    placer2.AnimState:SetBuild("winona_battery_low")
-    placer2.AnimState:PlayAnimation("idle_placer")
-    placer2.AnimState:SetLightOverride(1)
-
-    placer2.entity:SetParent(inst.entity)
-
-    inst.components.placer:LinkEntity(placer2)
-
-    inst.AnimState:SetScale(PLACER_SCALE, PLACER_SCALE)
-end
-
 return Prefab("ir_generator_t1", fn, assets, prefabs),
-    MakePlacer("ir_generator_t1_placer", "winona_battery_placement", "winona_battery_placement", "idle", true, nil, nil,
-        nil, nil, nil, placer_postinit_fn)
+    MakePlacer("ir_generator_t1_placer", "winona_battery_low", "winona_battery_low", "idle_empty", false, nil, nil,
+        nil, nil, nil, function(inst)
+            return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
+        end)
