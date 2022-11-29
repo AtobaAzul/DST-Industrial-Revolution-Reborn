@@ -32,8 +32,10 @@ end
 --gets the grid of an existing ent inside a grid.
 function PowerGrid:GetCurrentGrid(inst)
     for k, grid in pairs(self.power_grids) do
-        if grid.buildings[inst.GUID] ~= nil then
-            return grid
+        for k, v in pairs(grid.buildings) do
+            if v.inst == inst then
+                return grid
+            end
         end
     end
 end
@@ -50,7 +52,7 @@ function PowerGrid:CalculateGridPower(grid)
     --assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
     local power = 0
     for k, v in pairs(grid.buildings) do
-        power = power + v
+        power = power + v.power
     end
     grid.total_power = power
     return power
@@ -62,36 +64,41 @@ function PowerGrid:CalculateInstGridPower(inst)
     return self:CalculateGridPower(grid)
 end
 
---adds a inst to a grid.
+--adds an inst to a grid.
 function PowerGrid:AddInstToGrid(inst, grid)
-    if grid ~= nil and table.contains(grid.buildings, inst) then
-        return
-    end
-
-    if grid == nil then
-        grid = self:CreateGrid()
-    end
-
     assert(inst ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
-    assert(inst.components.ir_power ~= nil, "Attempted to add entity with invalid ir_power component!")
+    assert(inst.components.ir_power ~= nil, "Attempted to add entity without ir_power component!")
 
     --buildings cannot be in more than 1 grid.
     for k, v in pairs(self.power_grids) do
-        if v.buildings[inst.GUID] ~= nil and v ~= grid then
-            v.buildings[inst.GUID] = nil
+        for i, b in pairs(v.buildings) do
+            if b.inst == inst and v ~= grid then
+                b = nil
+            end
         end
+    end
+
+
+    if grid == nil then
+        grid = self:CreateGrid()
+        print("no grid found, creating grid.")
     end
 
     self:ClearEmptyGrids()
 
-    grid.buildings[inst.GUID] = inst.components.ir_power.power
+    table.insert(grid.buildings, { power = inst.components.ir_power.power, inst = inst })
+
     inst:PushEvent("ir_addedtogrid", { grid = grid })
     self:CalculateGridPower(grid)
 end
 
 function PowerGrid:RemoveInstFromGrids(inst)
-    for k,v in ipairs(self.power_grids)do
-        v.buildings[inst.GUID] = nil
+    for k, v in ipairs(self.power_grids) do
+        for i, building in ipairs(v) do
+            if building.inst == inst then
+                building = nil
+            end
+        end
     end
 end
 
@@ -102,7 +109,7 @@ function PowerGrid:OnSave()
 end
 
 function PowerGrid:OnLoad(data)
-    if data.power_grids ~= nil then
+    if data ~= nil and data.power_grids ~= nil then
         self.power_grids = data.power_grids
     end
 end

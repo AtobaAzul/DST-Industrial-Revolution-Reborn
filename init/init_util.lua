@@ -21,7 +21,9 @@ function FindAndMergeGrid(inst, radius)
     local x, y, z = inst.Transform:GetWorldPosition()
     local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_power" }, { "burnt" })
     local found_grids = {}
+    local current_grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
     local grid_to_connect
+
     print("FindAndMergeGrid")
     for k, v in pairs(ents) do
         local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
@@ -40,16 +42,25 @@ function FindAndMergeGrid(inst, radius)
 
     for k, v in ipairs(ents) do
         local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
-        if grid ~= nil and grid_to_connect ~= nil then
+        if grid ~= nil and grid_to_connect ~= nil and grid ~= grid_to_connect then
             for k, v in pairs(grid.buildings) do
                 print("connecting")
-                TheWorld.components.ir_powergrid:AddInstToGrid(Ents[k], grid_to_connect)
+                TheWorld.components.ir_powergrid:AddInstToGrid(v.inst, grid_to_connect)
+                v = nil
             end
         end
     end
 
     if grid_to_connect ~= nil then
+        if TheWorld.components.ir_powergrid:GetCurrentGrid(inst) ~= nil then
+            for k,v in pairs(TheWorld.components.ir_powergrid:GetCurrentGrid(inst).buildings) do
+                if v.inst == inst then
+                    v = nil
+                end
+            end
+        end
         TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid_to_connect)
+
     end
 
     if grid_to_connect == nil then
@@ -69,14 +80,15 @@ local function OnSave(inst, data)
 end
 
 local function OnLoad(inst, data)
-    if data ~= nil and data.grid ~= nil then
+    if data ~= nil and data.grid ~= nil and inst ~= nil then
+        TheWorld.components.ir_powergrid:AddInstToGrid(inst, data.grid)
         inst.has_grid = true
     end
 end
 
 local function OnLoadPostPass(inst, data)
     if not (inst.has_grid or data ~= nil and data.grid ~= nil) then
-        FindAndMergeGrid(inst, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST)
+        FindAndMergeGrid(inst)
     end
 end
 
