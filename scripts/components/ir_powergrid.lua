@@ -16,7 +16,6 @@ end, nil,
 function PowerGrid:CreateGrid() --inst
     self.power_grids[#self.power_grids + 1] = {
         buildings = {},
-        total_power = 0
     }
     return self.power_grids[#self.power_grids]
 end
@@ -24,7 +23,7 @@ end
 function PowerGrid:ClearEmptyGrids()
     for k, v in pairs(self.power_grids) do
         if #v.buildings == 0 then
-            v = nil
+            self.power_grids[k] = nil
         end
     end
 end
@@ -52,9 +51,8 @@ function PowerGrid:CalculateGridPower(grid)
     --assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
     local power = 0
     for k, v in pairs(grid.buildings) do
-        power = power + v.power
+        power = power + v.inst.components.ir_power.power
     end
-    grid.total_power = power
     return power
 end
 
@@ -78,18 +76,15 @@ function PowerGrid:AddInstToGrid(inst, grid)
         end
     end
 
-
     if grid == nil then
         grid = self:CreateGrid()
         print("no grid found, creating grid.")
     end
 
-    self:ClearEmptyGrids()
-
-    table.insert(grid.buildings, { power = inst.components.ir_power.power, inst = inst })
+    table.insert(grid.buildings, { inst = inst })
 
     inst:PushEvent("ir_addedtogrid", { grid = grid })
-    self:CalculateGridPower(grid)
+    self:ClearEmptyGrids()
 end
 
 function PowerGrid:RemoveInstFromGrids(inst)
@@ -103,15 +98,25 @@ function PowerGrid:RemoveInstFromGrids(inst)
 end
 
 function PowerGrid:OnSave()
-    return {
-        power_grids = self.power_grids
-    }
+    local refs = {}
+    local data = {}
+
+    for k, grid in pairs(self.power_grids) do
+        refs[k] = {}
+        data[k] = {}
+        for i, building in pairs(grid.buildings) do
+            data[k].building = building.inst.GUID
+            table.insert(refs[k], building.inst.GUID)
+        end
+    end
+    printwrap("refs", refs)
+    printwrap("data", data)
+
+    return data, refs
 end
 
-function PowerGrid:OnLoad(data)
-    if data ~= nil and data.power_grids ~= nil then
-        self.power_grids = data.power_grids
-    end
+function PowerGrid:OnLoadPostPass(ents, data)
+    printwrap("ents", "data")
 end
 
 return PowerGrid
