@@ -13,7 +13,7 @@ local prefabs =
 }
 
 local function onhammered(inst, worker)
-	inst.components.lootdropper:DropLoot()
+    inst.components.lootdropper:DropLoot()
 
     local fx = SpawnPrefab("collapse_big")
     fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
@@ -22,10 +22,9 @@ local function onhammered(inst, worker)
 end
 
 local function onhit(inst)
-	if not inst:HasTag("burnt") and not inst.AnimState:IsCurrentAnimation("place") and not inst._active then
-		inst.AnimState:PlayAnimation(inst.is_on and "hit_on" or "hit")
-		ToggleLights(inst, inst.is_on, true)
-	end
+    if not inst:HasTag("burnt") and not inst.AnimState:IsCurrentAnimation("place") and not inst._active then
+        inst.AnimState:PlayAnimation(inst.is_on and "hit_on" or "hit")
+    end
 end
 
 local function OnBurnt(inst)
@@ -38,31 +37,11 @@ local function OnSave(inst, data)
     data.grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
 end
 
-local function FindGrid(inst)
-    local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_power" }, { "burnt" })
-    local found_grid = false
-
-    for k, v in pairs(ents) do
-        local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
-        if grid ~= nil then
-            TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
-            found_grid = true
-            break
-        end
-    end
-
-    if not found_grid then
-        local grid = TheWorld.components.ir_powergrid:CreateGrid()
-        TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
-    end
-end
-
 local function OnLoad(inst, data)
     if data.grid ~= nil then
         inst.has_grid = true
     else
-        FindGrid(inst)
+        FindGrid(inst, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST)
     end
 end
 
@@ -81,7 +60,7 @@ local function fn()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, {"ir_power"})
+    carratrace_common.AddDeployHelper(inst, { "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -91,7 +70,9 @@ local function fn()
 
     inst.has_grid = false
 
-    inst:DoTaskInTime(0, FindGrid)
+    inst:DoTaskInTime(0, function()
+        FindGrid(inst, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST)
+    end)
 
     inst:AddComponent("inspectable")
 
@@ -119,7 +100,8 @@ local function fn()
 end
 
 return Prefab("ir_powerline", fn, assets, prefabs),
-    MakePlacer("ir_powerline_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_off", false, nil, nil,
+    MakePlacer("ir_powerline_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_off", false,
+        nil, nil,
         nil, nil, nil, function(inst)
         return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
     end)

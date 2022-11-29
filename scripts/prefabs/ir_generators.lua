@@ -121,46 +121,6 @@ local function OnBurnt(inst)
     inst:RemoveTag("NOCLICK")
 end
 
-local function OnSave(inst, data)
-    data.grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
-end
-
-local function FindGrid(inst)
-    local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 5, { "ir_power" }, { "burnt" })
-    local found_grid = false
-    local current_grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
-
-    for k, v in pairs(ents) do
-        local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
-        if grid ~= nil and TheWorld.components.ir_powergrid:IsGridValid(grid) then
-            if #grid.buildings < #current_grid.buildings then
-                TheWorld.components.ir_powergrid:AddInstToGrid(v, current_grid)
-                found_grid = true
-                break
-            else
-                TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
-                found_grid = true
-                break
-            end
-        end
-    end
-
-    if not found_grid then
-        local grid = TheWorld.components.ir_powergrid:CreateGrid()
-        TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
-    end
-end
-
-local function OnLoad(inst, data)
-    if data.grid ~= nil and TheWorld.components.ir_powergrid:IsGridValid(data.grid) then
-        TheWorld.components.ir_powergrid:AddInstToGrid(inst, data.grid)
-        inst.has_grid = true
-    else
-        FindGrid(inst)
-    end
-end
-
 local PLACER_SCALE = 1.5
 
 local function OnUpdatePlacerHelper(helperinst)
@@ -254,7 +214,9 @@ local function fn()
 
     inst.has_grid = false
 
-    inst:DoTaskInTime(0, FindGrid)
+    inst:DoTaskInTime(0, function()
+        FindGrid(inst, 5)
+    end)
 
     inst:AddComponent("inspectable")
 
@@ -288,9 +250,6 @@ local function fn()
     MakeMediumPropagator(inst)
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
-
-    inst.OnSave = OnSave
-    inst.OnLoad = OnLoad
 
     return inst
 end

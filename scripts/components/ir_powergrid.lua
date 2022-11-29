@@ -21,6 +21,14 @@ function PowerGrid:CreateGrid() --inst
     return self.power_grids[#self.power_grids]
 end
 
+function PowerGrid:ClearEmptyGrids()
+    for k, v in pairs(self.power_grids) do
+        if #v.buildings == 0 then
+            v = nil
+        end
+    end
+end
+
 --gets the grid of an existing ent inside a grid.
 function PowerGrid:GetCurrentGrid(inst)
     for k, grid in pairs(self.power_grids) do
@@ -56,6 +64,10 @@ end
 
 --adds a inst to a grid.
 function PowerGrid:AddInstToGrid(inst, grid)
+    if grid ~= nil and table.contains(grid.buildings, inst) then
+        return
+    end
+
     if grid == nil then
         grid = self:CreateGrid()
     end
@@ -67,10 +79,11 @@ function PowerGrid:AddInstToGrid(inst, grid)
     for k, v in pairs(self.power_grids) do
         if v.buildings[inst] ~= nil and v ~= grid then
             v.buildings[inst] = nil
-            self:ClearEmptyGrids()
             break
         end
     end
+
+    self:ClearEmptyGrids()
 
     grid.buildings[inst] = inst.components.ir_power.power
     inst:PushEvent("ir_addedtogrid", { grid = grid })
@@ -81,14 +94,6 @@ function PowerGrid:OnSave()
     return {
         power_grids = self.power_grids
     }
-end
-
-function PowerGrid:ClearEmptyGrids()
-    for k, v in pairs(self.power_grids) do
-        if #v.buildings == 0 then
-            v = nil
-        end
-    end
 end
 
 function PowerGrid:OnLoad(data)
