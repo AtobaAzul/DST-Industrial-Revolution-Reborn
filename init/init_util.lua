@@ -46,19 +46,19 @@ function FindAndMergeGrid(inst, radius)
             for k, v in pairs(grid.buildings) do
                 print("connecting")
                 TheWorld.components.ir_powergrid:AddInstToGrid(v.inst, grid_to_connect)
-                v = nil
+                grid.buildings[k] = nil
             end
         end
     end
 
     if grid_to_connect ~= nil then
-        if TheWorld.components.ir_powergrid:GetCurrentGrid(inst) ~= nil then
+        --[[if TheWorld.components.ir_powergrid:GetCurrentGrid(inst) ~= nil then
             for k,v in pairs(TheWorld.components.ir_powergrid:GetCurrentGrid(inst).buildings) do
                 if v.inst == inst then
                     v = nil
                 end
             end
-        end
+        end]]
         TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid_to_connect)
 
     end
