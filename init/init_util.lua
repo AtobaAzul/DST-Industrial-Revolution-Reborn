@@ -23,19 +23,15 @@ function FindAndMergeGrid(inst, radius)
     local found_grids = {}
     local current_grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
     local grid_to_connect
-
-    print("FindAndMergeGrid")
     for k, v in pairs(ents) do
         local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
         if grid ~= nil then
-            print("inserting")
             table.insert(found_grids, #grid.buildings)
         end
     end
 
     for k, v in pairs(TheWorld.components.ir_powergrid.power_grids) do
         if #found_grids ~= 0 and #v.buildings == math.max(unpack(found_grids)) then
-            print("found grid to connect")
             grid_to_connect = v
         end
     end
@@ -44,7 +40,6 @@ function FindAndMergeGrid(inst, radius)
         local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(v)
         if grid ~= nil and grid_to_connect ~= nil and grid ~= grid_to_connect then
             for k, v in pairs(grid.buildings) do
-                print("connecting")
                 TheWorld.components.ir_powergrid:AddInstToGrid(v.inst, grid_to_connect)
                 grid.buildings[k] = nil
             end
@@ -64,7 +59,6 @@ function FindAndMergeGrid(inst, radius)
     end
 
     if grid_to_connect == nil then
-        print("found no grid to connect to")
         local grid = TheWorld.components.ir_powergrid:CreateGrid()
         TheWorld.components.ir_powergrid:AddInstToGrid(inst, grid)
     end
@@ -79,7 +73,6 @@ end
 function MakeDefaultIRStructure(inst, def)
     inst:AddTag("ir_power")
     inst:AddComponent("ir_power")
-    inst.components.ir_power.power = def.power
 
     --inst.has_grid = false
     --inst:DoTaskInTime(0, function()
@@ -92,9 +85,17 @@ function MakeDefaultIRStructure(inst, def)
         FindAndMergeGrid(inst)
     end
 
+    inst:DoTaskInTime(0, FindAndMergeGrid)
+    inst:DoTaskInTime(0.5, function()
+        inst.components.ir_power.power = def.power
+    end)
     local _OnRemoveEntity = inst.OnRemoveEntity
     inst.OnRemoveEntity = function(inst)
+        local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst) 
         TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
+        if grid ~= nil then
+            TheWorld.components.ir_powergrid:CalculateGridPower(grid)
+        end
         if _OnRemoveEntity ~= nil then
             _OnRemoveEntity(inst)
         end

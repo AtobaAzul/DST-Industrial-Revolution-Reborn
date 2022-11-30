@@ -174,7 +174,7 @@ local function fn()
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
     MakeDefaultIRStructure(inst, {power = 10})
-
+    
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
 

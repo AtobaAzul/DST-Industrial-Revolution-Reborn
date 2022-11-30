@@ -16,6 +16,7 @@ end, nil,
 function PowerGrid:CreateGrid() --inst
     self.power_grids[#self.power_grids + 1] = {
         buildings = {},
+        grid_power = 0,
     }
     return self.power_grids[#self.power_grids]
 end
@@ -50,8 +51,16 @@ end
 function PowerGrid:CalculateGridPower(grid)
     --assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
     local power = 0
+    local old_grid_power = grid.grid_power
     for k, v in pairs(grid.buildings) do
         power = power + v.inst.components.ir_power.power
+    end
+    grid.grid_power = power
+
+    if old_grid_power ~= grid.grid_power then
+        for k, v in pairs(grid.buildings) do
+            v.inst:PushEvent("ir_ongridpowerchanged", power)
+        end
     end
     return power
 end
@@ -67,6 +76,13 @@ function PowerGrid:AddInstToGrid(inst, grid)
     assert(inst ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
     assert(inst.components.ir_power ~= nil, "Attempted to add entity without ir_power component!")
 
+
+    for k, v in pairs(grid.buildings) do
+        if v.inst == inst then
+            return
+        end
+    end
+
     --buildings cannot be in more than 1 grid.
     for k, v in pairs(self.power_grids) do
         for i, b in pairs(v.buildings) do
@@ -78,7 +94,6 @@ function PowerGrid:AddInstToGrid(inst, grid)
 
     if grid == nil then
         grid = self:CreateGrid()
-        print("no grid found, creating grid.")
     end
 
     table.insert(grid.buildings, { inst = inst })
