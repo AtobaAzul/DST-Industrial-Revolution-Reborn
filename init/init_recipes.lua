@@ -73,13 +73,13 @@ for i, v in pairs(GLOBAL.AllRecipes) do
 end
 
 AddRecipeFilter({ name = "ELECTRICITY", atlas = GLOBAL.resolvefilepath(GLOBAL.CRAFTING_ICONS_ATLAS),
-image = "filter_science.tex" })
+    image = "filter_science.tex" })
 STRINGS.UI.CRAFTING_FILTERS.ELECTRICITY = "Electricity"
 AddRecipeFilter({ name = "POWERED_BUILDINGS", atlas = GLOBAL.resolvefilepath(GLOBAL.CRAFTING_ICONS_ATLAS),
     image = "filter_science.tex" })
 STRINGS.UI.CRAFTING_FILTERS.POWERED_BUILDINGS = "Powered Structures"
 AddRecipeFilter({ name = "POWER_GENERATION", atlas = GLOBAL.resolvefilepath(GLOBAL.CRAFTING_ICONS_ATLAS),
-image = "filter_science.tex" })
+    image = "filter_science.tex" })
 STRINGS.UI.CRAFTING_FILTERS.POWER_GENERATION = "Power Production"
 
 
@@ -157,7 +157,7 @@ AddRecipeToFilter("researchlab2", "ELECTRICITY")
 AddRecipeToFilter("researchlab2", "POWERED_BUILDINGS")
 
 AddRecipe2(
-    "tech_prototyper",
+    "ir_tech_prototyper",
     { Ingredient("cutstone", 5), Ingredient("gears", 2), Ingredient("boards", 2) }, --TODO: ACtual recipe ingredients
     TECH.SCIENCE_ONE,
     { placer = "ir_tech_prototyper_placer" },

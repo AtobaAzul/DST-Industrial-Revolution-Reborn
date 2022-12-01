@@ -11,3 +11,6 @@ STRINGS.IR_POWERLINE = "Power Post"
 STRINGS.IR_LIGHTPOST = "Light Post"
 
 STRINGS.IR_SPOTLIGHT = "Spotlight"
+        
+STRINGS.IR_TECH_PROTOTYPER = "Wiring Table"
+STRINGS.IR_TECH_PROTOTYPER2 = "Electronics Desk"
