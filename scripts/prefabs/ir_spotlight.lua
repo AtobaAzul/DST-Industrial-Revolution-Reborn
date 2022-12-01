@@ -631,10 +631,14 @@ end
 --------------------------------------------------------------------------
 
 local function OnGridPowerChanged(inst, power)
+    if not inst.components.machine.ison then
+        EnableLight(inst, false)
+        return
+    end
 
     if power >= 0 then
         EnableLight(inst, true)
-        inst._lightinst.Light:SetRadius(TUNING.WINONA_SPOTLIGHT_RADIUS*2)
+        inst._lightinst.Light:SetRadius(TUNING.WINONA_SPOTLIGHT_RADIUS * 2)
     elseif power > inst.components.ir_power.power then
         EnableLight(inst, true)
         inst._lightinst.Light:SetRadius(TUNING.WINONA_SPOTLIGHT_RADIUS)
@@ -694,7 +698,7 @@ local function fn()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_t1", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
 
     inst:AddComponent("updatelooper")
     inst.components.updatelooper:AddOnUpdateFn(TheWorld.ismastersim and OnUpdateLightServer or OnUpdateLightClient)
@@ -707,7 +711,7 @@ local function fn()
         return inst
     end
 
-    MakeDefaultIRStructure(inst, { power = -7.5 })
+    MakeDefaultIRStructure(inst, { power = -7.5, toggleable = true })
 
     inst._headinst = SpawnPrefab("winona_spotlight_head")
     inst._headinst.entity:SetParent(inst.entity)

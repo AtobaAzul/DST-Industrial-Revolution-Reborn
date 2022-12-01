@@ -52,14 +52,26 @@ function PowerGrid:CalculateGridPower(grid)
     --assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
     local power = 0
     local old_grid_power = grid.grid_power
+    local has_generator = false
     for k, v in pairs(grid.buildings) do
+        if v.inst.components.ir_power.power > 0 then
+            has_generator = true
+        end
         power = power + v.inst.components.ir_power.power
     end
-    grid.grid_power = power
+
+    if has_generator then
+        grid.grid_power = power
+    else
+        grid.grid_power = -999
+        power = -999
+    end
 
     if old_grid_power ~= grid.grid_power then
         for k, v in pairs(grid.buildings) do
-            v.inst:PushEvent("ir_ongridpowerchanged", power)
+            v.inst:DoTaskInTime(0, function()
+                v.inst:PushEvent("ir_ongridpowerchanged", power)
+            end)
         end
     end
     return power
@@ -100,6 +112,7 @@ function PowerGrid:AddInstToGrid(inst, grid)
 
     inst:PushEvent("ir_addedtogrid", { grid = grid })
     --self:ClearEmptyGrids()
+    self:CalculateGridPower(grid)
 end
 
 function PowerGrid:RemoveInstFromGrids(inst)

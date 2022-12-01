@@ -52,6 +52,26 @@ local function ChangeSortKey(recipe_name, recipe_reference, filter, after)
     end
 end
 
+local TechTree = require("techtree")
+table.insert(TechTree.AVAILABLE_TECH, "IR_TECH")
+
+TECH.NONE.IR_TECH = 0
+TECH.IR_TECH_ONE = {IR_TECH = 1}
+TECH.IR_TECH_TWO = {IR_TECH = 2}
+
+for k, v in pairs(TUNING.PROTOTYPER_TREES) do
+    v.CUSTOM_TECH = 0
+end
+
+TUNING.PROTOTYPER_TREES.IR_TECH_ONE = TechTree.Create({IR_TECH = 1})
+TUNING.PROTOTYPER_TREES.IR_TECH_TWO = TechTree.Create({IR_TECH = 2})
+
+for i, v in pairs(GLOBAL.AllRecipes) do
+    if v.level.IR_TECH == nil then
+        v.level.IR_TECH = 0
+    end
+end
+
 ------------------
 --RECIPE CHANGES--
 ------------------
@@ -61,17 +81,17 @@ end
 ---------------
 
 AddRecipe2(
-    "ir_generator_t1",
-    { Ingredient("nitre", 2), Ingredient("gears", 1), Ingredient("cutstone", 2) },
-    TECH.SCIENCE_ONE,
-    { placer = "ir_generator_t1_placer" },
+    "ir_generator_burnable",
+    { Ingredient("goldnugget", 2), Ingredient("gears", 1), Ingredient("cutstone", 2) },
+    TECH.IR_TECH_ONE,
+    { placer = "ir_generator_burnable_placer" },
     { "STRUCTURES" }
 )
 
 AddRecipe2(
     "ir_powerline",
-    { Ingredient("boards", 2), Ingredient("goldnugget", 2), Ingredient("cutstone", 2) },
-    TECH.SCIENCE_ONE,
+    { Ingredient("boards", 2), Ingredient("goldnugget", 6), Ingredient("cutstone", 2) },
+    TECH.IR_TECH_ONE,
     { placer = "ir_powerline_placer" },
     { "STRUCTURES" }
 )

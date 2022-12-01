@@ -5,6 +5,9 @@ local component_post = {
 
 local prefab_post = {
 	"world",
+	"icebox",
+	"lightningrod",
+	"researchlab2",
 }
 
 local stategraph_post = {

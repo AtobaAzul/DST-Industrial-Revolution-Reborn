@@ -64,34 +64,67 @@ function FindAndMergeGrid(inst, radius)
     end
 end
 
-local function OnLoadPostPass(inst, data)
-    FindAndMergeGrid(inst)
-end
-
 --adds ir_power, DoTaskInTime for finding grids, and some other misc stuff
 --@def.power; @def.range
 function MakeDefaultIRStructure(inst, def)
+    --inside so wecan access def.power
+    inst.on_power = def.power
+    local function TurnOnFn(inst)
+        inst.components.ir_power.power = inst.on_power
+        if inst.components.fueled ~= nil and inst.components.fueled.ontakefuelfn ~= nil then
+            inst.components.fueled.ontakefuelfn(inst)
+        end
+    end
+
+    local function TurnOffFn(inst)
+        inst.components.ir_power.power = 0
+        if inst.components.fueled ~= nil and inst.components.fueled.depleted ~= nil then
+            inst.components.fueled.depleted(inst)
+        end
+    end
+
     inst:AddTag("ir_power")
     inst:AddComponent("ir_power")
 
-    --inst.has_grid = false
-    --inst:DoTaskInTime(0, function()
-    --   if not inst.has_grid then
-    --        FindAndMergeGrid(inst)
-    --    end
-    --end)
+    if def.toggleable then
+        inst:AddComponent("machine")
+        inst.components.machine.turnonfn = TurnOnFn
+        inst.components.machine.turnofffn = TurnOffFn
+        inst.components.machine.cooldowntime = 0.5
 
+        --god damnit why is component saving/loading so unreliable
+
+        local _OnLoad = inst.OnLoad
+        inst.OnLoad = function(inst, data)
+            if data ~= nil and data.machine ~= nil and data.machine.ison then
+                inst:DoTaskInTime(0, function()
+                    print("TURN FUCKING ON")
+                    inst.components.machine:TurnOn()
+                end)
+            end
+            if _OnLoad ~= nil then
+                _OnLoad(inst, data)
+            end
+        end
+
+        if not POPULATING then
+            inst.components.machine:TurnOn()
+        end
+    else
+        inst:DoTaskInTime(FRAMES, function()
+            inst.components.ir_power.power = 0 --just to force a update.
+            inst.components.ir_power.power = def.power
+        end)
+    end
     if not POPULATING then
         FindAndMergeGrid(inst)
     end
 
     inst:DoTaskInTime(0, FindAndMergeGrid)
-    inst:DoTaskInTime(0.5, function()
-        inst.components.ir_power.power = def.power
-    end)
+
     local _OnRemoveEntity = inst.OnRemoveEntity
     inst.OnRemoveEntity = function(inst)
-        local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst) 
+        local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
         TheWorld.components.ir_powergrid:RemoveInstFromGrids(inst)
         if grid ~= nil then
             TheWorld.components.ir_powergrid:CalculateGridPower(grid)
@@ -103,7 +136,7 @@ function MakeDefaultIRStructure(inst, def)
 
     local _OnLoadPostPass = inst.OnLoadPostPass
     inst.OnLoadPostPass = function(inst, data)
-        OnLoadPostPass(inst, data)
+        FindAndMergeGrid(inst)
         if _OnLoadPostPass ~= nil then
             _OnLoadPostPass(inst, data)
         end

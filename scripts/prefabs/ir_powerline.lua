@@ -48,7 +48,7 @@ local function fn()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_t1", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -77,8 +77,76 @@ local function fn()
     return inst
 end
 
+local function OnGridPowerChanged(inst, power)
+	if power > 0 then
+		inst.AnimState:PushAnimation("idle_on", true)
+        inst.Light:Enable(true)
+	else
+		inst.AnimState:PlayAnimation("idle_off", true)
+        inst.Light:Enable(false)
+	end
+end
+
+local function fn_light()
+    local inst = CreateEntity()
+
+    inst.entity:AddTransform()
+    inst.entity:AddNetwork()
+    inst.entity:AddAnimState()
+    inst.entity:AddLight()
+    inst.entity:AddSoundEmitter()
+    inst.entity:AddPhysics()
+
+    inst.AnimState:SetBank("yotc_carrat_race_checkpoint")
+    inst.AnimState:SetBuild("yotc_carrat_race_checkpoint")
+    inst.AnimState:PushAnimation("idle_on", true)
+
+    inst.Light:SetColour(180 / 255, 195 / 255, 150 / 255)
+    inst.Light:SetRadius(3)
+    inst.Light:SetFalloff(0.5)
+    inst.Light:SetIntensity(0.8)
+    inst.Light:Enable(true)
+
+    inst:AddTag("ir_power") --added to pristine state for optimization
+
+    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+
+    inst.entity:SetPristine()
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst:AddComponent("inspectable")
+
+    inst:AddComponent("lootdropper")
+
+    inst:AddComponent("workable")
+    inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
+    inst.components.workable:SetWorkLeft(4)
+    inst.components.workable:SetOnWorkCallback(onhit)
+    inst.components.workable:SetOnFinishCallback(onhammered)
+
+    MakeHauntableWork(inst)
+    MakeMediumBurnable(inst, nil, nil, true)
+    MakeMediumPropagator(inst)
+
+    MakeDefaultIRStructure(inst, {power = -2.5})
+
+    inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
+    inst.components.burnable:SetOnBurntFn(OnBurnt)
+
+    return inst
+end
+
 return Prefab("ir_powerline", fn, assets, prefabs),
     MakePlacer("ir_powerline_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_off", false,
+        nil, nil,
+        nil, nil, nil, function(inst)
+        return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
+    end),
+    Prefab("ir_lightpost", fn_light, assets, prefabs),
+    MakePlacer("ir_lightpost_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_on", false,
         nil, nil,
         nil, nil, nil, function(inst)
         return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
