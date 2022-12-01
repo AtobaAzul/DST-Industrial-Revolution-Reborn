@@ -18,11 +18,11 @@ env.AddPrefabPostInit("lightning_rod", function(inst)
     --inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
 
     inst:DoTaskInTime(1, function()
-        inst.components.ir_power.power = inst.chargeleft*3
+        inst.components.ir_power.power = inst.chargeleft ~= nil and inst.chargeleft*3 or 0
     end)
 
     inst:WatchWorldState("cycles", function()
-        inst.components.ir_power.power = inst.chargeleft*3
+        inst.components.ir_power.power = inst.chargeleft ~= nil and inst.chargeleft*3 or 0
     end)
 end)
 

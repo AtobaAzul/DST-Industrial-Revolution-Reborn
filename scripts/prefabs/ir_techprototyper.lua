@@ -245,7 +245,7 @@ end
 --------------------------------------------------------------------------
 
 --Using old prefab names
-return createmachine(1, "tech_prototyper", "lvl1", TUNING.PROTOTYPER_TREES.IR_TECH_ONE, "science"),
-    createmachine(2, "tech_prototyper2", "lvl2", TUNING.PROTOTYPER_TREES.IR_TECH_ONE, "alchemy"),
-    MakePlacer("tech_prototyper_placer", "researchlab", "researchlab", "idle" ),
-    MakePlacer("tech_prototyper2_placer", "researchlab2", "researchlab2", "idle")
+return createmachine(1, "ir_tech_prototyper", "lvl1", TUNING.PROTOTYPER_TREES.IR_TECH_ONE, "science"),
+    createmachine(2, "ir_tech_prototyper2", "lvl2", TUNING.PROTOTYPER_TREES.IR_TECH_ONE, "alchemy"),
+    MakePlacer("ir_tech_prototyper_placer", "researchlab", "researchlab", "idle" ),
+    MakePlacer("ir_tech_prototyper2_placer", "researchlab2", "researchlab2", "idle")
