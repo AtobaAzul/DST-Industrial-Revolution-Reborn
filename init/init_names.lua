@@ -14,3 +14,5 @@ STRINGS.IR_SPOTLIGHT = "Spotlight"
         
 STRINGS.IR_TECH_PROTOTYPER = "Wiring Table"
 STRINGS.IR_TECH_PROTOTYPER2 = "Electronics Desk"
+
+STRINGS.IR_HEALING_PAD = "Healing Pad"

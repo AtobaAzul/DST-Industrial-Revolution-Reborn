@@ -139,41 +139,25 @@ local function OnBuilt3(inst)
     end
 end
 
-local function OnBuilt2(inst)
-    if inst.AnimState:IsCurrentAnimation("place") then
-        if inst.components.fueled:IsEmpty() then
-            StopSoundLoop(inst)
-        else
-            if not inst.components.fueled.consuming then
-                inst.components.fueled:StartConsuming()
-            end
-            if not inst:IsAsleep() then
-                StartSoundLoop(inst)
-            end
-        end
-    end
-end
-
-local function OnBuilt1(inst)
-    if inst.AnimState:IsCurrentAnimation("place") then
-        inst.SoundEmitter:PlaySound("dontstarve/common/together/battery/up")
-        if not (inst.components.fueled:IsEmpty() or inst:IsAsleep()) then
-            StartSoundLoop(inst)
-        end
-    end
-end
-
 local function OnBuilt(inst) --, data)
     inst:ListenForEvent("animover", OnBuilt3)
     inst.AnimState:PlayAnimation("place")
     inst.AnimState:ClearAllOverrideSymbols()
     inst.SoundEmitter:PlaySound("dontstarve/common/together/battery/place")
-    --inst:AddTag("NOCLICK")
-    --inst.components.fueled.accepting = false
-    --inst.components.fueled:StopConsuming()
-    --StopSoundLoop(inst)
-    --inst:DoTaskInTime(60 * FRAMES, OnBuilt1)
-    --inst:DoTaskInTime(66 * FRAMES, OnBuilt2)
+end
+
+local function OnSave(inst, data)
+    if inst.fuelsection ~= nil then
+        data.fuelsection = inst.fuelsection
+    end
+end
+
+local function OnLoadPostPass(inst, data)
+    if data ~= nil and data.fuelsection ~= nil then
+        inst:DoTaskInTime(0, function()
+            OnFuelSectionChange(data.fuelsection, nil, inst)
+        end)
+    end
 end
 
 local function fn_burnable()
@@ -187,7 +171,7 @@ local function fn_burnable()
 
     inst.AnimState:SetBank("winona_battery_low")
     inst.AnimState:SetBuild("winona_battery_low")
-    inst.AnimState:PlayAnimation("idle_charge", true)
+    inst.AnimState:PlayAnimation("idle_empty", true)
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
@@ -229,6 +213,9 @@ local function fn_burnable()
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
 
+    inst.OnSave = OnSave
+    inst.OnLoadPostPass = OnLoadPostPass
+
     return inst
 end
 
@@ -243,7 +230,7 @@ local function fn_battery()
 
     inst.AnimState:SetBank("winona_battery_low")
     inst.AnimState:SetBuild("winona_battery_low")
-    inst.AnimState:PlayAnimation("idle_charge", true)
+    inst.AnimState:PlayAnimation("idle_empty", true)
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
@@ -270,6 +257,7 @@ local function fn_battery()
     inst.components.fueled:StartConsuming()
 
     inst:AddComponent("lootdropper")
+    inst.components.lootdropper:SetLoot({"goldnugget", "cutstone"})
 
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
@@ -284,6 +272,9 @@ local function fn_battery()
 
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
+
+    inst.OnSave = OnSave
+    inst.OnLoadPostPass = OnLoadPostPass
 
     return inst
 end

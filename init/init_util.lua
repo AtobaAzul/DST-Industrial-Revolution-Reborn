@@ -68,22 +68,34 @@ end
 --@def.power; @def.range
 function MakeDefaultIRStructure(inst, def)
     --inside so wecan access def.power
+
+    local carratrace_common = require("prefabs/yotc_carrat_race_common")
+
+
+    inst:AddTag("ir_power")
+
+    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+
+    if not TheWorld.ismastersim then
+        return
+    end
+
     inst.on_power = def.power
+
     local function TurnOnFn(inst)
         inst.components.ir_power.power = inst.on_power
-        if inst.components.fueled ~= nil and inst.components.fueled.ontakefuelfn ~= nil then
-            inst.components.fueled.ontakefuelfn(inst)
+        if inst.components.fueled ~= nil and inst.components.fueled.ontakefuelfn ~= nil and not inst.components.fueled:IsEmpty() then
+            inst:DoTaskInTime(0, inst.components.fueled.ontakefuelfn)
         end
     end
 
     local function TurnOffFn(inst)
         inst.components.ir_power.power = 0
         if inst.components.fueled ~= nil and inst.components.fueled.depleted ~= nil then
-            inst.components.fueled.depleted(inst)
+            inst:DoTaskInTime(0, inst.components.fueled.depleted)
         end
     end
 
-    inst:AddTag("ir_power")
     inst:AddComponent("ir_power")
 
     if def.toggleable then
@@ -94,16 +106,18 @@ function MakeDefaultIRStructure(inst, def)
 
         --god damnit why is component saving/loading so unreliable
 
-        local _OnLoad = inst.OnLoad
-        inst.OnLoad = function(inst, data)
-            if data ~= nil and data.machine ~= nil and data.machine.ison then
+        local _OnLoadPostPass = inst.OnLoadPostPass
+        inst.OnLoadPostPass = function(inst, data)
+            FindAndMergeGrid(inst)
+
+            if inst.components.machine.ison and inst.components.fueled ~= nil and not inst.components.fueled:IsEmpty() then
                 inst:DoTaskInTime(0, function()
                     print("TURN FUCKING ON")
                     inst.components.machine:TurnOn()
                 end)
             end
-            if _OnLoad ~= nil then
-                _OnLoad(inst, data)
+            if _OnLoadPostPass ~= nil then
+                _OnLoadPostPass(inst, data)
             end
         end
 
@@ -133,12 +147,7 @@ function MakeDefaultIRStructure(inst, def)
             _OnRemoveEntity(inst)
         end
     end
-
-    local _OnLoadPostPass = inst.OnLoadPostPass
-    inst.OnLoadPostPass = function(inst, data)
-        FindAndMergeGrid(inst)
-        if _OnLoadPostPass ~= nil then
-            _OnLoadPostPass(inst, data)
-        end
-    end
 end
+
+--Oposite of unpack.
+pack = function(...) return { ... } end

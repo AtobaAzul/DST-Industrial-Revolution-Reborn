@@ -18,5 +18,23 @@ local multiplayer_armor_absorption_modifier = 1
 
 TUNING.IR =
 {
+    REFINERY_ITEMS = {
+        "cutgrass",
+        "cutstone",
+        "log",
+        "rocks",
+        "goldnugget",
+        "cutreeds",
+        "moonrocknugget",
+        "honeycomb",
+        "marble",
 
+        "beeswax",
+        "moonrockcrater",
+        "rope",
+        "papyrus",
+        "boards",
+        "marblebean",
+        "transistor",
+    }
 }

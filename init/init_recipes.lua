@@ -108,12 +108,11 @@ AddRecipe2(
 
 AddRecipe2(
     "ir_generator_battery",
-    { Ingredient("goldnugget", 2), Ingredient("nitre", 2), Ingredient("cutstone", 1) },
+    { Ingredient("goldnugget", 2), Ingredient("nitre", 3), Ingredient("cutstone", 1) },
     TECH.IR_TECH_ONE,
     { placer = "ir_generator_battery_placer" },
     { "STRUCTURES", "ELECTRICITY", "POWER_GENERATION" }
 )
-
 AddRecipeToFilter("lightning_rod", "ELECTRICITY")
 AddRecipeToFilter("lightning_rod", "POWER_GENERATION")
 
@@ -156,6 +155,13 @@ AddRecipeToFilter("icebox", "ELECTRICITY")
 AddRecipeToFilter("researchlab2", "ELECTRICITY")
 AddRecipeToFilter("researchlab2", "POWERED_BUILDINGS")
 
+AddRecipe2("ir_healing_pad",
+    { Ingredient("cutstone", 5), Ingredient("gears", 2), Ingredient("redgem", 2) }, --TODO: ACtual recipe ingredients
+    TECH.IR_TECH_ONE,
+    { placer = "ir_healing_pad_placer" },
+    { "STRUCTURES", "ELECTRICITY", "RESTORATION", "POWERED_BUILDINGS"}
+)
+
 AddRecipe2(
     "ir_tech_prototyper",
     { Ingredient("cutstone", 5), Ingredient("gears", 2), Ingredient("boards", 2) }, --TODO: ACtual recipe ingredients
@@ -167,12 +173,10 @@ AddRecipe2(
 AddRecipe2(
     "ir_tech_prototyper2",
     { Ingredient("cutstone", 5), Ingredient("gears", 2), Ingredient("boards", 2) }, --TODO: ACtual recipe ingredients
-    TECH.SCIENCE_ONE,
+    TECH.IR_TECH_ONE,
     { placer = "ir_tech_prototyper2_placer" },
     { "STRUCTURES", "ELECTRICITY", "PROTOTYPERS" }
 )
-
-
 
 
 ------------------

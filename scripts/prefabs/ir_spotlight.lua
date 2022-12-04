@@ -802,7 +802,7 @@ end
 
 return Prefab("ir_spotlight", fn, assets, prefabs),
     Prefab("ir_spotlight_head", headfn, assets_head),
-    MakePlacer("ir_spotlight_placer", "winona_spotlight_placement", "winona_spotlight_placement", "idle", false, nil, nil
+    MakePlacer("ir_spotlight_placer", "winona_spotlight_placement", "winona_spotlight_placement", "idle", true, nil, nil
         , nil, nil, nil, function(inst)
         return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
     end)
