@@ -720,7 +720,7 @@ local function fn()
 
     inst._state = 1
 
-    inst:ListenForEvent("ir_addedtogrid", OnConnectCircuit)
+    inst:ListenForEvent("ir_addedtogrid_power", OnConnectCircuit)
     inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = GetStatus

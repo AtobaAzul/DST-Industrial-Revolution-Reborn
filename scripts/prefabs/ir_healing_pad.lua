@@ -57,7 +57,7 @@ end
 --------------------------------------------------------------------------
 
 local function IsPowered(inst)
-    local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
+    local grid = TheWorld.components.ir_resourcenetwork_power:GetCurrentGrid(inst)
     if grid ~= nil and grid.grid_power >= 0 and inst.components.machine.ison then
         return true
     end
@@ -184,7 +184,7 @@ local function fn()
     inst:AddComponent("savedrotation")
 
     inst:ListenForEvent("onbuilt", OnBuilt)
-    inst:ListenForEvent("ir_addedtogrid", OnConnectCircuit)
+    inst:ListenForEvent("ir_addedtogrid_power", OnConnectCircuit)
 
     MakeHauntableWork(inst)
     MakeMediumBurnable(inst, nil, nil, true)

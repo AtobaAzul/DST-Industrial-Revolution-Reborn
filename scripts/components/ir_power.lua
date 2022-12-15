@@ -1,6 +1,6 @@
 local function onpowerchanged(self, power)
-    if TheWorld ~= nil and TheWorld.components.ir_powergrid:GetCurrentGrid(self.inst) ~= nil then
-        TheWorld.components.ir_powergrid:CalculateInstGridPower(self.inst)
+    if TheWorld ~= nil and TheWorld.components.ir_resourcenetwork_power:GetCurrentGrid(self.inst) ~= nil then
+        TheWorld.components.ir_resourcenetwork_power:CalculateInstGridPower(self.inst)
     end
 end
 

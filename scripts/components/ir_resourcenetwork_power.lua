@@ -2,7 +2,7 @@ local function OnPowergridsChanged(self, power_grids)
     self:ClearEmptyGrids()
 end
 
-local PowerGrid = Class(function(self, inst)
+local PowerNetwork = Class(function(self, inst)
     self.inst = inst
 
     self.power_grids = {}
@@ -13,7 +13,7 @@ end, nil,
 )
 
 --creates grids, returns the grid as well.
-function PowerGrid:CreateGrid() --inst
+function PowerNetwork:CreateGrid() --inst
     self.power_grids[#self.power_grids + 1] = {
         buildings = {},
         grid_power = 0,
@@ -21,7 +21,7 @@ function PowerGrid:CreateGrid() --inst
     return self.power_grids[#self.power_grids]
 end
 
-function PowerGrid:ClearEmptyGrids()
+function PowerNetwork:ClearEmptyGrids()
     for k, v in pairs(self.power_grids) do
         if #v.buildings == 0 then
             self.power_grids[k] = nil
@@ -30,7 +30,7 @@ function PowerGrid:ClearEmptyGrids()
 end
 
 --gets the grid of an existing ent inside a grid.
-function PowerGrid:GetCurrentGrid(inst)
+function PowerNetwork:GetCurrentGrid(inst)
     for k, grid in pairs(self.power_grids) do
         for k, v in pairs(grid.buildings) do
             if v.inst == inst then
@@ -41,14 +41,14 @@ function PowerGrid:GetCurrentGrid(inst)
 end
 
 --checks if the grid parameter array is inside in self.power_grids
-function PowerGrid:IsGridValid(grid)
+function PowerNetwork:IsGridValid(grid)
     if table.contains(self.power_grids, grid) then
         return true
     end
     return false
 end
 
-function PowerGrid:CalculateGridPower(grid)
+function PowerNetwork:CalculateGridPower(grid)
     --assert(self:IsGridValid(grid), "Attempted to calculate power of invalid grid!")
     local power = 0
     local old_grid_power = grid.grid_power
@@ -78,13 +78,13 @@ function PowerGrid:CalculateGridPower(grid)
 end
 
 --calculates the power
-function PowerGrid:CalculateInstGridPower(inst)
+function PowerNetwork:CalculateInstGridPower(inst)
     local grid = self:GetCurrentGrid(inst)
     return self:CalculateGridPower(grid)
 end
 
 --adds an inst to a grid.
-function PowerGrid:AddInstToGrid(inst, grid)
+function PowerNetwork:AddInstToGrid(inst, grid)
     assert(inst ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
     assert(inst.components.ir_power ~= nil, "Attempted to add entity without ir_power component!")
 
@@ -110,12 +110,12 @@ function PowerGrid:AddInstToGrid(inst, grid)
 
     table.insert(grid.buildings, { inst = inst })
 
-    inst:PushEvent("ir_addedtogrid", { grid = grid })
+    inst:PushEvent("ir_addedtogrid_power", { grid = grid })
     --self:ClearEmptyGrids()
     self:CalculateGridPower(grid)
 end
 
-function PowerGrid:RemoveInstFromGrids(inst)
+function PowerNetwork:RemoveInstFromGrids(inst)
     for k, v in ipairs(self.power_grids) do
         for i, building in ipairs(v) do
             if building.inst == inst then
@@ -125,4 +125,4 @@ function PowerGrid:RemoveInstFromGrids(inst)
     end
 end
 
-return PowerGrid
+return PowerNetwork

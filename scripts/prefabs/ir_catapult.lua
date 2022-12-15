@@ -193,7 +193,7 @@ end
 --------------------------------------------------------------------------
 
 local function IsPowered(inst)
-    local grid = TheWorld.components.ir_powergrid:GetCurrentGrid(inst)
+    local grid = TheWorld.components.ir_resourcenetwork_power:GetCurrentGrid(inst)
     if grid ~= nil and grid.grid_power >= 0 and inst.components.machine.ison then
         return true
     end
@@ -336,7 +336,7 @@ local function fn()
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("death", OnDeath)
     inst:ListenForEvent("healthdelta", OnHealthDelta)
-    inst:ListenForEvent("ir_addedtogrid", OnConnectCircuit)
+    inst:ListenForEvent("ir_addedtogrid_power", OnConnectCircuit)
     inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
 
     MakeHauntableWork(inst)
