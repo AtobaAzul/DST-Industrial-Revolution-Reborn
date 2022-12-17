@@ -1,67 +1,56 @@
-local function OnPowergridsChanged(self, power_grids)
-    --self:ClearEmptyGrids()
-end
-
+--[[
+Simpler because most of the item network things will be handled by the prefabs themselves.
+Just need this to have the whole control over various entities
+]]
 local ItemNetwork = Class(function(self, inst)
     self.inst = inst
 
-    self.item_grid = {}
+    self.item_grids = {}
 end, nil,
     {
-       --item_grid = OnPowergridsChanged
     }
 )
 
 function ItemNetwork:CreateGrid()
-    self.item_grid[#self.item_grid + 1] = {
-        inputs = {},    --input means things that insert items to the output
-        outputs = {},   
-        nodes = {},     --nodes are for connecting inputs and outputs.
+    self.item_grids[#self.item_grids + 1] = {
+        buildings = {}, --input means things that insert items to the output
     }
-    return self.item_grid[#self.item_grid]
+    return self.item_grids[#self.item_grids]
 end
 
-function ItemNetwork:AddInputInst(inst, grid)
-    for k, v in pairs(grid.inputs) do
-        if v.inst == inst then
-            return
-        end
-    end
-
-    table.insert(self.item_grid[grid].AddInputInst, inst)
-
-    inst:PushEvent("ir_addedtogrid_item", {grid = grid, type = "Input"})
-end
-
-function ItemNetwork:AddOutputInst(inst, grid)
+--adds an inst to a grid.
+function ItemNetwork:AddInstToGrid(inst, grid)
     assert(inst ~= nil, "Attempted to add invalid entity to grid " .. tostring(grid) .. "!")
+    assert(inst.components.ir_itemnetworkable ~= nil, "Attempted to add entity without ir_itemnetworkable component!")--Just in case...
 
-    for k, v in pairs(grid.outputs) do
+
+    for k, v in pairs(grid.buildings) do
         if v.inst == inst then
             return
         end
     end
 
-    table.insert(self.item_grid[grid].outputs, inst)
-
-    inst:PushEvent("ir_addedtogrid_item", {grid = grid, type = "Output"})
-end
-
-function ItemNetwork:AddNodeInst(inst, grid)
-    for k, v in pairs(grid.nodes) do
-        if v.inst == inst then
-            return
+    --buildings cannot be in more than 1 grid.
+    for k, v in pairs(self.power_grids) do
+        for i, b in pairs(v.buildings) do
+            if b.inst == inst and v ~= grid then
+                b = nil
+            end
         end
     end
 
-    table.insert(self.item_grid[grid].nodes, inst)
+    if grid == nil then
+        grid = self:CreateGrid()
+    end
 
-    inst:PushEvent("ir_addedtogrid_item", {grid = grid, type = "Node"})
+    table.insert(grid.buildings, { inst = inst })
+
+    inst:PushEvent("ir_addedtogrid_item", { grid = grid })
 end
 
 --gets the grid of an existing ent inside a grid.
-function PowerNetwork:GetCurrentGrid(inst)
-    for k, grid in pairs(self.item_grid) do
+function ItemNetwork:GetCurrentGrid(inst)
+    for k, grid in pairs(self.item_grids) do
         for k, v in pairs(grid.inputs) do
             if v.inst == inst then
                 return grid, "Input"
@@ -75,6 +64,18 @@ function PowerNetwork:GetCurrentGrid(inst)
         for k, v in pairs(grid.nodes) do
             if v.inst == inst then
                 return grid, "Node"
+            end
+        end
+    end
+end
+
+function ItemNetwork:RemoveInstFromGrids(inst)
+    for k, grid in pairs(self.item_grids) do
+        for k, v in pairs(grid) do
+            for k, v in pairs(v) do
+                if v.inst == inst then
+                    v = nil
+                end
             end
         end
     end

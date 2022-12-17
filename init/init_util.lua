@@ -17,7 +17,7 @@ function TestForIA()
     end
 end
 
-function FindAndMergeGrid(inst, radius)
+function FindAndMergePowerGrid(inst, radius)
     local x, y, z = inst.Transform:GetWorldPosition()
     local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_power" }, { "burnt" })
     local found_grids = {}
@@ -108,11 +108,10 @@ function MakeDefaultIRStructure(inst, def)
 
         local _OnLoadPostPass = inst.OnLoadPostPass
         inst.OnLoadPostPass = function(inst, data)
-            FindAndMergeGrid(inst)
+            FindAndMergePowerGrid(inst)
 
             if inst.components.machine.ison and inst.components.fueled ~= nil and not inst.components.fueled:IsEmpty() then
                 inst:DoTaskInTime(0, function()
-                    print("TURN FUCKING ON")
                     inst.components.machine:TurnOn()
                 end)
             end
@@ -131,10 +130,10 @@ function MakeDefaultIRStructure(inst, def)
         end)
     end
     if not POPULATING then
-        FindAndMergeGrid(inst)
+        FindAndMergePowerGrid(inst)
     end
 
-    inst:DoTaskInTime(0, FindAndMergeGrid)
+    inst:DoTaskInTime(0, FindAndMergePowerGrid)
 
     local _OnRemoveEntity = inst.OnRemoveEntity
     inst.OnRemoveEntity = function(inst)
@@ -146,6 +145,54 @@ function MakeDefaultIRStructure(inst, def)
         if _OnRemoveEntity ~= nil then
             _OnRemoveEntity(inst)
         end
+    end
+end
+
+--TODO TODO TODO
+function FindAndMergeItemGrid(inst, radius)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_itemgrid" }, { "burnt" })
+    local found_grids = {}
+    local current_grid = TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(inst)
+    local grid_to_connect
+    for k, v in pairs(ents) do
+        local grid = TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(v)
+        if grid ~= nil then
+            table.insert(found_grids, #grid.buildings)
+        end
+    end
+
+    for k, v in pairs(TheWorld.components.ir_resourcenetwork_item.power_grids) do
+        if #found_grids ~= 0 and #v.buildings == math.max(unpack(found_grids)) then
+            grid_to_connect = v
+        end
+    end
+
+    for k, v in ipairs(ents) do
+        local grid = TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(v)
+        if grid ~= nil and grid_to_connect ~= nil and grid ~= grid_to_connect then
+            for k, v in pairs(grid.buildings) do
+                TheWorld.components.ir_resourcenetwork_item:AddInstToGrid(v.inst, grid_to_connect)
+                grid.buildings[k] = nil
+            end
+        end
+    end
+
+    if grid_to_connect ~= nil then
+        --[[if TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(inst) ~= nil then
+            for k,v in pairs(TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(inst).buildings) do
+                if v.inst == inst then
+                    v = nil
+                end
+            end
+        end]]
+        TheWorld.components.ir_resourcenetwork_item:AddInstToGrid(inst, grid_to_connect)
+
+    end
+
+    if grid_to_connect == nil then
+        local grid = TheWorld.components.ir_resourcenetwork_item:CreateGrid()
+        TheWorld.components.ir_resourcenetwork_item:AddInstToGrid(inst, grid)
     end
 end
 
