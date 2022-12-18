@@ -698,7 +698,7 @@ local function fn()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst:AddComponent("updatelooper")
     inst.components.updatelooper:AddOnUpdateFn(TheWorld.ismastersim and OnUpdateLightServer or OnUpdateLightClient)
@@ -711,7 +711,7 @@ local function fn()
         return inst
     end
 
-    MakeDefaultIRStructure(inst, { power = -7.5, toggleable = true })
+    MakeDefaultPoweredStructure(inst, { power = -7.5, toggleable = true })
 
     inst._headinst = SpawnPrefab("winona_spotlight_head")
     inst._headinst.entity:SetParent(inst.entity)

@@ -13,7 +13,7 @@ end, nil,
 
 function ItemNetwork:CreateGrid()
     self.item_grids[#self.item_grids + 1] = {
-        buildings = {}, --input means things that insert items to the output
+        buildings = {},
     }
     return self.item_grids[#self.item_grids]
 end
@@ -31,7 +31,7 @@ function ItemNetwork:AddInstToGrid(inst, grid)
     end
 
     --buildings cannot be in more than 1 grid.
-    for k, v in pairs(self.power_grids) do
+    for k, v in pairs(self.item_grids) do
         for i, b in pairs(v.buildings) do
             if b.inst == inst and v ~= grid then
                 b = nil
@@ -51,19 +51,9 @@ end
 --gets the grid of an existing ent inside a grid.
 function ItemNetwork:GetCurrentGrid(inst)
     for k, grid in pairs(self.item_grids) do
-        for k, v in pairs(grid.inputs) do
+        for k, v in pairs(grid.buildings) do
             if v.inst == inst then
-                return grid, "Input"
-            end
-        end
-        for k, v in pairs(grid.outputs) do
-            if v.inst == inst then
-                return grid, "Output"
-            end
-        end
-        for k, v in pairs(grid.nodes) do
-            if v.inst == inst then
-                return grid, "Node"
+                return grid
             end
         end
     end

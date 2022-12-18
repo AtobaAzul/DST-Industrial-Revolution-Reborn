@@ -286,7 +286,7 @@ local function fn()
     inst:AddTag("structure")
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.AnimState:SetBank("winona_catapult")
     inst.AnimState:SetBuild("winona_catapult")
@@ -296,7 +296,7 @@ local function fn()
 
     inst.MiniMapEntity:SetIcon("winona_catapult.png")
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -306,7 +306,7 @@ local function fn()
 
     inst._state = 1
 
-    MakeDefaultIRStructure(inst, { power = -12.5, toggleable = true })
+    MakeDefaultPoweredStructure(inst, { power = -12.5, toggleable = true })
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = GetStatus

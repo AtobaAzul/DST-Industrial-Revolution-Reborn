@@ -7,13 +7,13 @@ local carratrace_common = require("prefabs/yotc_carrat_race_common")
 env.AddPrefabPostInit("lightning_rod", function(inst)
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     if not TheWorld.ismastersim then
         return
     end
 
-    MakeDefaultIRStructure(inst, { power = 0 })
+    MakeDefaultPoweredStructure(inst, { power = 0 })
 
     --inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
 

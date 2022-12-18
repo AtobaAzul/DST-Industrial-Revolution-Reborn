@@ -117,10 +117,10 @@ AddRecipeToFilter("lightning_rod", "ELECTRICITY")
 AddRecipeToFilter("lightning_rod", "POWER_GENERATION")
 
 AddRecipe2(
-    "ir_powerline",
+    "ir_node_power",
     { Ingredient("boards", 2), Ingredient("goldnugget", 4), Ingredient("cutstone", 2) },
     TECH.IR_TECH_ONE,
-    { placer = "ir_powerline_placer" },
+    { placer = "ir_node_power_placer" },
     { "STRUCTURES", "ELECTRICITY" }
 )
 
@@ -134,11 +134,11 @@ AddRecipe2(
 )
 
 AddRecipe2(
-    "ir_lightpost",
+    "ir_node_power_light",
     { Ingredient("lightbulb", 2), Ingredient("goldnugget", 6), Ingredient("cutstone", 2) },
     --TODO: ACtual recipe ingredients
     TECH.IR_TECH_ONE,
-    { placer = "ir_lightpost_placer" },
+    { placer = "ir_node_power_light_placer" },
     { "LIGHT", "STRUCTURES", "ELECTRICITY", "POWERED_BUILDINGS" }
 )
 

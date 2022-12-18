@@ -13,3 +13,12 @@ local function ToggleIRVision(toggle)
 end
 
 AddModRPCHandler("IndustrialRevolution", "ToggleIRVision", ToggleIRVision)
+
+local function SetWrenchMode(player, wrench, mode)
+    print(wrench, mode)
+    wrench.mode = mode
+    wrench.spelltype = "Mode: "..mode
+end
+
+AddModRPCHandler("IndustrialRevolution", "SetWrenchMode", SetWrenchMode)
+

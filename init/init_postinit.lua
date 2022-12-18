@@ -8,6 +8,7 @@ local prefab_post = {
 	"icebox",
 	"lightningrod",
 	"researchlab2",
+	"itemnetworkable"
 }
 
 local stategraph_post = {

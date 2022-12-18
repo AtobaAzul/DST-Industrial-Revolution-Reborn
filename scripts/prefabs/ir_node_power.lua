@@ -48,7 +48,7 @@ local function fn()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -70,7 +70,7 @@ local function fn()
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
 
-    MakeDefaultIRStructure(inst, {power = 0})
+    MakeDefaultPoweredStructure(inst, {power = 0})
 
     inst.components.burnable:SetOnBurntFn(OnBurnt)
 
@@ -109,7 +109,7 @@ local function fn_light()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -131,7 +131,7 @@ local function fn_light()
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
 
-    MakeDefaultIRStructure(inst, {power = -2.5})
+    MakeDefaultPoweredStructure(inst, {power = -2.5})
 
     inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
     inst.components.burnable:SetOnBurntFn(OnBurnt)
@@ -139,14 +139,14 @@ local function fn_light()
     return inst
 end
 
-return Prefab("ir_powerline", fn, assets, prefabs),
-    MakePlacer("ir_powerline_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_off", false,
+return Prefab("ir_node_power", fn, assets, prefabs),
+    MakePlacer("ir_node_power_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_off", false,
         nil, nil,
         nil, nil, nil, function(inst)
         return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
     end),
-    Prefab("ir_lightpost", fn_light, assets, prefabs),
-    MakePlacer("ir_lightpost_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_on", false,
+    Prefab("ir_node_power_light", fn_light, assets, prefabs),
+    MakePlacer("ir_node_power_light_placer", "yotc_carrat_race_checkpoint", "yotc_carrat_race_checkpoint", "idle_on", false,
         nil, nil,
         nil, nil, nil, function(inst)
         return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")

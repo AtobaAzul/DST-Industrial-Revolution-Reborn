@@ -22,7 +22,7 @@ end
 env.AddPrefabPostInit("icebox", function(inst)
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     if not TheWorld.ismastersim then
         return
@@ -30,7 +30,7 @@ env.AddPrefabPostInit("icebox", function(inst)
 
     inst.components.inspectable.getstatus = GetStatus
 
-    MakeDefaultIRStructure(inst, {power = -5})
+    MakeDefaultPoweredStructure(inst, {power = -5})
 
     inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
 end)

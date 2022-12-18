@@ -175,7 +175,7 @@ local function fn_burnable()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -208,7 +208,7 @@ local function fn_burnable()
     MakeHauntableWork(inst)
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
-    MakeDefaultIRStructure(inst, { power = 10, toggleable = true })
+    MakeDefaultPoweredStructure(inst, { power = 10, toggleable = true })
 
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
@@ -234,7 +234,7 @@ local function fn_battery()
 
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.entity:SetPristine()
 
@@ -268,7 +268,7 @@ local function fn_battery()
     MakeHauntableWork(inst)
     MakeMediumBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
-    MakeDefaultIRStructure(inst, { power = 15 })
+    MakeDefaultPoweredStructure(inst, { power = 15 })
 
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption

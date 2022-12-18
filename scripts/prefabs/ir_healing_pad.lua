@@ -154,7 +154,7 @@ local function fn()
     inst:AddTag("structure")
     inst:AddTag("ir_power") --added to pristine state for optimization
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     inst.AnimState:SetBank("winona_battery_low")
     inst.AnimState:SetBuild("winona_battery_low")
@@ -167,7 +167,7 @@ local function fn()
         return inst
     end
 
-    MakeDefaultIRStructure(inst, { power = -20, toggleable = true })
+    MakeDefaultPoweredStructure(inst, { power = -20, toggleable = true })
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = GetStatus

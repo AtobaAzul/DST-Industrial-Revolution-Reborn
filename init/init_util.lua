@@ -66,7 +66,7 @@ end
 
 --adds ir_power, DoTaskInTime for finding grids, and some other misc stuff
 --@def.power; @def.range
-function MakeDefaultIRStructure(inst, def)
+function MakeDefaultPoweredStructure(inst, def)
     --inside so wecan access def.power
 
     local carratrace_common = require("prefabs/yotc_carrat_race_common")
@@ -74,7 +74,7 @@ function MakeDefaultIRStructure(inst, def)
 
     inst:AddTag("ir_power")
 
-    carratrace_common.AddDeployHelper(inst, { "ir_powerline", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
 
     if not TheWorld.ismastersim then
         return
@@ -84,7 +84,8 @@ function MakeDefaultIRStructure(inst, def)
 
     local function TurnOnFn(inst)
         inst.components.ir_power.power = inst.on_power
-        if inst.components.fueled ~= nil and inst.components.fueled.ontakefuelfn ~= nil and not inst.components.fueled:IsEmpty() then
+        if inst.components.fueled ~= nil and inst.components.fueled.ontakefuelfn ~= nil and
+            not inst.components.fueled:IsEmpty() then
             inst:DoTaskInTime(0, inst.components.fueled.ontakefuelfn)
         end
     end
@@ -148,13 +149,13 @@ function MakeDefaultIRStructure(inst, def)
     end
 end
 
---TODO TODO TODO
 function FindAndMergeItemGrid(inst, radius)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_itemgrid" }, { "burnt" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_itemnetworkable" },
+        { "burnt" })
     local found_grids = {}
-    local current_grid = TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(inst)
     local grid_to_connect
+
     for k, v in pairs(ents) do
         local grid = TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(v)
         if grid ~= nil then
@@ -162,7 +163,7 @@ function FindAndMergeItemGrid(inst, radius)
         end
     end
 
-    for k, v in pairs(TheWorld.components.ir_resourcenetwork_item.power_grids) do
+    for k, v in pairs(TheWorld.components.ir_resourcenetwork_item.item_grids) do
         if #found_grids ~= 0 and #v.buildings == math.max(unpack(found_grids)) then
             grid_to_connect = v
         end
@@ -193,6 +194,38 @@ function FindAndMergeItemGrid(inst, radius)
     if grid_to_connect == nil then
         local grid = TheWorld.components.ir_resourcenetwork_item:CreateGrid()
         TheWorld.components.ir_resourcenetwork_item:AddInstToGrid(inst, grid)
+    end
+end
+
+function MakeDefaultItemNetworkableStructure(inst, def)
+    local carratrace_common = require("prefabs/yotc_carrat_race_common")
+
+    inst:AddTag("ir_itemnetworkable")
+
+    carratrace_common.AddDeployHelper(inst, { "ir_itemnetworkable" })
+
+    inst:AddComponent("ir_itemnetworkable")
+
+    if def and def.valid_modes then
+        inst.components.ir_itemnetworkable:SetValidModes(def.valid_modes)
+    end
+
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    if not POPULATING then
+        FindAndMergeItemGrid(inst)
+    end
+
+    inst:DoTaskInTime(0, FindAndMergeItemGrid)
+
+    local _OnRemoveEntity = inst.OnRemoveEntity
+    inst.OnRemoveEntity = function(inst)
+        TheWorld.components.ir_resourcenetwork_item:RemoveInstFromGrids(inst)
+        if _OnRemoveEntity ~= nil then
+            _OnRemoveEntity(inst)
+        end
     end
 end
 

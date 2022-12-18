@@ -4,4 +4,6 @@ GLOBAL.setfenv(1, GLOBAL)
 
 env.AddPrefabPostInit("world", function(inst)
     TheWorld:AddComponent("ir_resourcenetwork_power")
+    TheWorld:AddComponent("ir_resourcenetwork_item")
+
 end)

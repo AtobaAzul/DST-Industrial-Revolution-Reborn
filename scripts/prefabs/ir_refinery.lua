@@ -78,11 +78,40 @@ end
 local function Refine(item, count, product, container)
     local product_item = SpawnPrefab(product)
     local item = container.components.container:FindItem(function(_item) return _item.prefab == item end)
+
     if item ~= nil and item.components.stackable ~= nil then
+
         for i = 1, count do
             container.components.container:RemoveItem(item, false):Remove()
         end
-        container.components.container:GiveItem(product_item)
+
+        local grid = TheWorld.components.ir_resourcenetwork_item:GetCurrentGrid(container)
+        if grid ~= nil and
+            (container.components.ir_itemnetworkable.mode == "I" or container.components.ir_itemnetworkable.mode == "IO"
+            ) then
+            local valid_outputs = {}
+                print("has grid and mode is valid")
+            for k, v in pairs(grid.buildings) do
+                if (
+                    v.inst.components.ir_itemnetworkable:GetMode() == "O" or
+                        v.inst.components.ir_itemnetworkable:GetMode() == "IO" and v ~= container) and
+                    v.inst.components.container ~= nil then
+                    table.insert(valid_outputs, v.inst)
+                    print("found valid building")
+                end
+            end
+
+            if #valid_outputs ~= 0 then
+                print("more than 0 valid output")
+                valid_outputs[math.random(#valid_outputs)].components.container:GiveItem(product_item)
+            else
+                print("no valid outputs")
+                container.components.container:GiveItem(product_item)
+            end
+        else
+            print("no grid or invalid mode")
+            container.components.container:GiveItem(product_item)
+        end
     end
 end
 
@@ -160,13 +189,13 @@ local function fn()
 
     inst.entity:SetPristine()
 
-    MakeDefaultIRStructure(inst, { power = -7.5, toggleable = true })
+    MakeDefaultPoweredStructure(inst, { power = -7.5, toggleable = true })
 
     if not TheWorld.ismastersim then
         return inst
     end
 
-    inst.DoRefine = DoRefine--just so other mods may be able to alter.
+    inst.DoRefine = DoRefine --just so other mods may be able to alter.
     inst.Refine = Refine
 
     inst:AddComponent("inspectable")
@@ -199,6 +228,8 @@ local function fn()
     inst.OnLoad = OnLoad
 
     inst:ListenForEvent("ir_ongridpowerchanged", OnGridPowerChanged)
+
+    MakeDefaultItemNetworkableStructure(inst, { valid_modes = { "IO", "I", "O" } })
 
     return inst
 end

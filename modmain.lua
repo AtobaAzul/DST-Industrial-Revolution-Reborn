@@ -20,3 +20,5 @@ local inits =
 for k,v in ipairs(inits) do
     modimport("init/init_"..v)
 end
+
+GLOBAL.UPGRADETYPES.ITEM_NETWORKABLE = "ITEM_NETWORKABLE"
