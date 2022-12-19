@@ -57,6 +57,12 @@ local function OnWorkFinished(inst)
     fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
     fx:SetMaterial("wood")
     inst:Remove()
+
+    local grid = TheWorld.components.ir_resourcenetwork_power:GetCurrentGrid(inst)
+    TheWorld.components.ir_resourcenetwork_power:RemoveInstFromGrids(inst)
+    if grid ~= nil then
+        TheWorld.components.ir_resourcenetwork_power:CalculateGridPower(grid)
+    end
 end
 
 local function OnFuelEmpty(inst)
