@@ -28,13 +28,13 @@ TUNING.IR =
         "moonrocknugget",
         "honeycomb",
         "marble",
-
+        --[[
         "beeswax",
         "moonrockcrater",
         "rope",
         "papyrus",
         "boards",
         "marblebean",
-        "transistor",
+        "transistor",]]
     }
 }

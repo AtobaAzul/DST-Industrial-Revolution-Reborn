@@ -93,8 +93,6 @@ local function OnSpellCast(inst, target, pos, doer)
 end
 
 local function CanCast(doer, target, pos)
-    printwrap("",target.components.ir_itemnetworkable.valid_modes)
-    print(inst.mode)
     if target:HasTag("ir_itemnetworkable") and not target:HasTag("burnt") then
         return true
     end
@@ -126,8 +124,6 @@ local function fn()
     inst.components.spellbook:SetRequiredTag("ir_wrenchuser")
 	inst.components.spellbook:SetRadius(SPELLBOOK_RADIUS)
 	inst.components.spellbook:SetFocusRadius(SPELLBOOK_FOCUS_RADIUS)
-
-    inst.spelltype = "Mode: "..inst.mode
 
     inst.mode = "None"
 

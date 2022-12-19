@@ -33,6 +33,9 @@ for y = 1, 0, -1 do
     end
 end
 
+containers.params.ir_itemfilter = deepcopy(containers.params.tacklecontainer)
+containers.params.ir_itemfilter.itemtestfn = nil
+
 for k, v in pairs(modparams) do
     containers.MAXITEMSLOTS = math.max(containers.MAXITEMSLOTS, v.widget.slotpos ~= nil and #v.widget.slotpos or 0)
 end

@@ -9,4 +9,7 @@ return {
     "ir_refinery",
     "ir_wrench",
     "ir_upgrader_itemnetwork",
+    "ir_generator_steam",
+    "ir_oceanpump",
+    "ir_node_fluid"
 }

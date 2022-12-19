@@ -14,6 +14,46 @@ local prefabs =
 
 local NUM_LEVELS = 6
 
+local function Toggle(inst, toggle)
+    if toggle then
+        inst.AnimState:PlayAnimation("idle_charge", true)
+        inst.AnimState:OverrideSymbol("m2", "winona_battery_low", "m7")
+    else
+        inst.AnimState:PlayAnimation("idle_empty", true)
+        inst.AnimState:OverrideSymbol("m2", "winona_battery_low", "m1")
+    end
+end
+
+local function OnGridFluidChanged(inst, fluid)
+    if fluid == nil then
+        fluid = TheWorld.components.ir_resourcenetwork_fluid:CalculateInstGridFluid(inst)
+    end
+
+    if TheWorld.components.ir_resourcenetwork_fluid:GetCurrentGrid(inst).fluid_type == "water" or "saltwater" then
+        if not inst.components.fueled:IsEmpty() then
+            if fluid >= 15 then
+                inst.components.ir_power.power = 60
+                Toggle(inst, true)
+            elseif fluid >= 7.5 then
+                inst.components.ir_power.power = 40
+                Toggle(inst, true)
+            elseif fluid > 0 then
+                inst.components.ir_power.power = 20
+                Toggle(inst, true)
+            else
+                inst.components.ir_power.power = 0
+                Toggle(inst, false)
+            end
+        else
+            inst.components.ir_power.power = 0
+            Toggle(inst, false)
+        end
+    else
+        inst.components.ir_power.power = 0
+        Toggle(inst, false)
+    end
+end
+
 local function OnHitAnimOver(inst)
     inst:RemoveEventCallback("animover", OnHitAnimOver)
     if inst.AnimState:IsCurrentAnimation("hit") then
@@ -63,6 +103,8 @@ local function OnFuelEmpty(inst)
     inst.components.ir_power.power = 0
     inst.components.fueled:StopConsuming()
 
+    OnGridFluidChanged(inst)
+
     inst.AnimState:OverrideSymbol("m2", "winona_battery_low", "m1")
     inst.AnimState:OverrideSymbol("plug", "winona_battery_low", "plug_off")
     if inst.AnimState:IsCurrentAnimation("idle_charge") then
@@ -74,30 +116,16 @@ local function OnFuelEmpty(inst)
     StopSoundLoop(inst)
 end
 
-local function OnFuelEmpty_Disposeable(inst)
-    OnWorkFinished(inst)
-end
-
-local function OnFuelSectionChange(new, old, inst)
-    if inst.components.fueled.accepting then
-        inst.AnimState:OverrideSymbol("m2", "winona_battery_low", "m" .. tostring(math.clamp(new + 1, 1, 7)))
-        inst.AnimState:ClearOverrideSymbol("plug")
-        UpdateSoundLoop(inst, new)
-        inst.fuelsection = new
-    end
-end
-
 local function OnAddFuel(inst)
-    inst.components.machine.ison = true
-    inst.components.ir_power.power = 10
     inst.components.fueled:StartConsuming()
+
+    OnGridFluidChanged(inst)
+    Toggle(inst, true)
 
     if not inst:IsAsleep() then
         StartSoundLoop(inst)
     end
-    if inst.fuelsection ~= nil then
-        OnFuelSectionChange(inst.fuelsection, nil, inst)
-    end
+
     inst.AnimState:PlayAnimation("idle_charge", true)
     inst.SoundEmitter:PlaySound("dontstarve/common/together/battery/up")
 end
@@ -107,16 +135,6 @@ local function OnWorked(inst)
         PlayHitAnim(inst)
     end
     inst.SoundEmitter:PlaySound("dontstarve/common/together/catapult/hit")
-end
-
-local function OnBurnt(inst)
-    DefaultBurntStructureFn(inst)
-    StopSoundLoop(inst)
-    if inst.components.fueled ~= nil then
-        inst:RemoveComponent("fueled")
-    end
-    inst.components.workable:SetOnWorkCallback(nil)
-    inst:RemoveTag("NOCLICK")
 end
 
 local function OnBuilt3(inst)
@@ -146,20 +164,6 @@ local function OnBuilt(inst) --, data)
     inst.SoundEmitter:PlaySound("dontstarve/common/together/battery/place")
 end
 
-local function OnSave(inst, data)
-    if inst.fuelsection ~= nil then
-        data.fuelsection = inst.fuelsection
-    end
-end
-
-local function OnLoadPostPass(inst, data)
-    if data ~= nil and data.fuelsection ~= nil then
-        inst:DoTaskInTime(0, function()
-            OnFuelSectionChange(data.fuelsection, nil, inst)
-        end)
-    end
-end
-
 local function fn_burnable()
     local inst = CreateEntity()
 
@@ -174,10 +178,13 @@ local function fn_burnable()
     inst.AnimState:PlayAnimation("idle_empty", true)
 
     inst:AddTag("ir_power") --added to pristine state for optimization
+    inst:AddTag("ir_fluid")
 
-    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
+    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_fluid", "ir_power" })
 
     inst.entity:SetPristine()
+
+    inst.Transform:SetScale(1.5, 1.5, 1.5)
 
     if not TheWorld.ismastersim then
         return inst
@@ -190,10 +197,8 @@ local function fn_burnable()
     inst:AddComponent("fueled")
     inst.components.fueled:SetDepletedFn(OnFuelEmpty)
     inst.components.fueled:SetTakeFuelFn(OnAddFuel)
-    inst.components.fueled:InitializeFuelLevel(TUNING.WINONA_BATTERY_LOW_MAX_FUEL_TIME)
+    inst.components.fueled:InitializeFuelLevel(TUNING.WINONA_BATTERY_LOW_MAX_FUEL_TIME * 4)
     inst.components.fueled.fueltype = FUELTYPE.BURNABLE
-    inst.components.fueled:SetSections(NUM_LEVELS)
-    inst.components.fueled:SetSectionCallback(OnFuelSectionChange)
     inst.components.fueled.accepting = true
     inst.components.fueled:StartConsuming()
 
@@ -206,87 +211,18 @@ local function fn_burnable()
     inst.components.workable:SetOnFinishCallback(OnWorkFinished)
 
     MakeHauntableWork(inst)
-    MakeMediumBurnable(inst, nil, nil, true)
-    MakeMediumPropagator(inst)
-    MakeDefaultPoweredStructure(inst, { power = 10, toggleable = true })
 
-    inst.components.burnable:SetOnBurntFn(OnBurnt)
-    inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
+    MakeDefaultPoweredStructure(inst, { power = 40 })
+    MakeDefaultFluidStructure(inst, { fluid = -7.5 })
 
-    inst.OnSave = OnSave
-    inst.OnLoadPostPass = OnLoadPostPass
+    inst:ListenForEvent("ir_ongridfluidchanged", OnGridFluidChanged)
 
     return inst
 end
 
-local function fn_battery()
-    local inst = CreateEntity()
-
-    inst.entity:AddTransform()
-    inst.entity:AddNetwork()
-    inst.entity:AddAnimState()
-    inst.entity:AddSoundEmitter()
-    inst.entity:AddPhysics()
-
-    inst.AnimState:SetBank("winona_battery_low")
-    inst.AnimState:SetBuild("winona_battery_low")
-    inst.AnimState:PlayAnimation("idle_charge", true)
-
-    inst:AddTag("ir_power") --added to pristine state for optimization
-
-    carratrace_common.AddDeployHelper(inst, { "ir_node_power", "ir_generator_burnable", "ir_power" })
-
-    inst.entity:SetPristine()
-
-    if not TheWorld.ismastersim then
-        return inst
-    end
-
-    inst:AddComponent("inspectable")
-
-    inst:ListenForEvent("onbuilt", OnBuilt)
-
-    inst:AddComponent("fueled")
-    inst.components.fueled:SetDepletedFn(OnFuelEmpty_Disposeable)
-    inst.components.fueled:SetTakeFuelFn(OnAddFuel)
-    inst.components.fueled:InitializeFuelLevel(TUNING.WINONA_BATTERY_LOW_MAX_FUEL_TIME * 2)
-    inst.components.fueled.fueltype = FUELTYPE.MAGIC
-    inst.components.fueled:SetSections(NUM_LEVELS)
-    inst.components.fueled:SetSectionCallback(OnFuelSectionChange)
-    inst.components.fueled.accepting = true
-    inst.components.fueled:StartConsuming()
-
-    inst:AddComponent("lootdropper")
-    inst.components.lootdropper:SetLoot({"goldnugget", "cutstone"})
-
-    inst:AddComponent("workable")
-    inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
-    inst.components.workable:SetWorkLeft(4)
-    inst.components.workable:SetOnWorkCallback(OnWorked)
-    inst.components.workable:SetOnFinishCallback(OnWorkFinished)
-
-    MakeHauntableWork(inst)
-    MakeMediumBurnable(inst, nil, nil, true)
-    MakeMediumPropagator(inst)
-    MakeDefaultPoweredStructure(inst, { power = 15 })
-
-    inst.components.burnable:SetOnBurntFn(OnBurnt)
-    inst.components.burnable.ignorefuel = true --igniting/extinguishing should not start/stop fuel consumption
-
-    inst.OnSave = OnSave
-    inst.OnLoadPostPass = OnLoadPostPass
-
-    return inst
-end
-
-return Prefab("ir_generator_burnable", fn_burnable, assets, prefabs),
-    MakePlacer("ir_generator_burnable_placer", "winona_battery_low", "winona_battery_low", "idle_empty", false, nil, nil
+return Prefab("ir_generator_steam", fn_burnable, assets, prefabs),
+    MakePlacer("ir_generator_steam_placer", "winona_battery_low", "winona_battery_low", "idle_empty", false, nil, nil
         ,
-        nil, nil, nil, function(inst)
-        return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
-    end),
-    Prefab("ir_generator_battery", fn_battery, assets, prefabs),
-    MakePlacer("ir_generator_battery_placer", "winona_battery_low", "winona_battery_low", "idle_empty", false, nil, nil,
         nil, nil, nil, function(inst)
         return carratrace_common.PlacerPostInit_AddPlacerRing(inst, "ir_power")
     end)

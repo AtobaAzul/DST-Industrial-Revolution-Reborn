@@ -90,26 +90,21 @@ local function Refine(item, count, product, container)
             (container.components.ir_itemnetworkable.mode == "I" or container.components.ir_itemnetworkable.mode == "IO"
             ) then
             local valid_outputs = {}
-                print("has grid and mode is valid")
             for k, v in pairs(grid.buildings) do
                 if (
                     v.inst.components.ir_itemnetworkable:GetMode() == "O" or
                         v.inst.components.ir_itemnetworkable:GetMode() == "IO" and v ~= container) and
                     v.inst.components.container ~= nil then
                     table.insert(valid_outputs, v.inst)
-                    print("found valid building")
                 end
             end
 
             if #valid_outputs ~= 0 then
-                print("more than 0 valid output")
                 valid_outputs[math.random(#valid_outputs)].components.container:GiveItem(product_item)
             else
-                print("no valid outputs")
                 container.components.container:GiveItem(product_item)
             end
         else
-            print("no grid or invalid mode")
             container.components.container:GiveItem(product_item)
         end
     end

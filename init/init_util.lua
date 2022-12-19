@@ -9,10 +9,8 @@ GLOBAL.setfenv(1, GLOBAL)
 function TestForIA()
     if TheWorld ~= nil and not (TheWorld:HasTag("forest") or TheWorld:HasTag("cave")) and
         (TheWorld:HasTag("island") or TheWorld:HasTag("volcano")) and KnownModIndex:IsModEnabled("workshop-1467214795") then
-        print("TestForIA: is IA world!")
         return true
     else
-        print("TestForIA: not IA world!")
         return false
     end
 end
@@ -223,6 +221,105 @@ function MakeDefaultItemNetworkableStructure(inst, def)
     local _OnRemoveEntity = inst.OnRemoveEntity
     inst.OnRemoveEntity = function(inst)
         TheWorld.components.ir_resourcenetwork_item:RemoveInstFromGrids(inst)
+        if _OnRemoveEntity ~= nil then
+            _OnRemoveEntity(inst)
+        end
+    end
+end
+
+function FindAndMergeFluidGrid(inst, radius)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local ents = TheSim:FindEntities(x, y, z, TUNING.YOTC_RACER_CHECKPOINT_FIND_DIST, { "ir_fluid" }, { "burnt" })
+    local found_grids = {}
+    local current_grid = TheWorld.components.ir_resourcenetwork_fluid:GetCurrentGrid(inst)
+    local grid_to_connect
+    for k, v in pairs(ents) do
+        local grid = TheWorld.components.ir_resourcenetwork_fluid:GetCurrentGrid(v)
+        if grid ~= nil then
+            table.insert(found_grids, #grid.buildings)
+        end
+    end
+
+    for k, v in pairs(TheWorld.components.ir_resourcenetwork_fluid.fluid_grids) do
+        if #found_grids ~= 0 and #v.buildings == math.max(unpack(found_grids)) then
+            grid_to_connect = v
+        end
+    end
+
+    for k, v in ipairs(ents) do
+        local grid = TheWorld.components.ir_resourcenetwork_fluid:GetCurrentGrid(v)
+        if grid ~= nil and grid_to_connect ~= nil and grid ~= grid_to_connect then
+            for k, v in pairs(grid.buildings) do
+                TheWorld.components.ir_resourcenetwork_fluid:AddInstToGrid(v.inst, grid_to_connect)
+                grid.buildings[k] = nil
+            end
+        end
+    end
+
+    if grid_to_connect ~= nil then
+        --[[if TheWorld.components.ir_resourcenetwork_power:GetCurrentGrid(inst) ~= nil then
+            for k,v in pairs(TheWorld.components.ir_resourcenetwork_power:GetCurrentGrid(inst).buildings) do
+                if v.inst == inst then
+                    v = nil
+                end
+            end
+        end]]
+
+        if grid_to_connect.fluid_type == nil or grid_to_connect.fluid_type == inst.components.ir_fluid.fluid_type or
+            inst.components.ir_fluid.fluid_type == nil then
+            TheWorld.components.ir_resourcenetwork_fluid:AddInstToGrid(inst, grid_to_connect)
+            grid_to_connect.fluid_type = inst.components.ir_fluid.fluid_type
+        end
+    end
+
+    if grid_to_connect == nil then
+        local grid = TheWorld.components.ir_resourcenetwork_fluid:CreateGrid()
+        TheWorld.components.ir_resourcenetwork_fluid:AddInstToGrid(inst, grid)
+        if grid.fluid_type == nil then
+            grid.fluid_type = inst.components.ir_fluid.fluid_type
+        end
+    end
+end
+
+--adds ir_power, DoTaskInTime for finding grids, and some other misc stuff
+--@def.fluid; @def.fluid_type, @def.is_pump
+function MakeDefaultFluidStructure(inst, def)
+    --inside so wecan access def.power
+
+    local carratrace_common = require("prefabs/yotc_carrat_race_common")
+
+    inst:AddTag("ir_fluid")
+
+    carratrace_common.AddDeployHelper(inst, { "ir_fluid" })
+
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.on_power = def.fluid
+
+    inst:AddComponent("ir_fluid")
+    inst.components.ir_fluid.fluid_type = def ~= nil and def.fluid_type or nil
+    inst.components.ir_fluid.is_pump = def ~= nil and def.is_pump ~= nil and def.is_pump or false
+
+    inst:DoTaskInTime(FRAMES, function()
+        inst.components.ir_fluid.fluid = 0 --just to force a update.
+        inst.components.ir_fluid.power = def.fluid
+    end)
+
+    if not POPULATING then
+        FindAndMergeFluidGrid(inst)
+    end
+
+    inst:DoTaskInTime(0, FindAndMergeFluidGrid)
+
+    local _OnRemoveEntity = inst.OnRemoveEntity
+    inst.OnRemoveEntity = function(inst)
+        local grid = TheWorld.components.ir_resourcenetwork_fluid:GetCurrentGrid(inst)
+        TheWorld.components.ir_resourcenetwork_fluid:RemoveInstFromGrids(inst)
+        if grid ~= nil then
+            TheWorld.components.ir_resourcenetwork_fluid:CalculateGridFluid(grid)
+        end
         if _OnRemoveEntity ~= nil then
             _OnRemoveEntity(inst)
         end
